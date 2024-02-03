@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Integracoes\" />
+    <Compile Remove="Integracoes\**" />
+    <EmbeddedResource Remove="Integracoes\**" />
+    <None Remove="Integracoes\**" />
   </ItemGroup>
 
 </Project>

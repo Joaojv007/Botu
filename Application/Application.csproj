@@ -7,11 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="DashBoard\" />
+    <Compile Remove="DashBoard\**" />
+    <EmbeddedResource Remove="DashBoard\**" />
+    <None Remove="DashBoard\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Business\Infra.csproj" />
+    <ProjectReference Include="..\Infra\Infra.csproj" />
   </ItemGroup>
 
 </Project>

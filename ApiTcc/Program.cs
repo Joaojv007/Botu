@@ -4,7 +4,9 @@ using Application.Integracoes.Queries;
 using Application.Interfaces;
 using Infra;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using Hangfire;
+using Hangfire.SqlServer;
+using Hangfire.MySql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,7 +32,27 @@ builder.Services.AddDbContext<BotuContext>(options =>
 builder.Services.AddScoped<IBotuContext, BotuContext>();
 builder.Services.AddScoped<IAdicionarIntegracaoCommandHandler, AdicionarIntegracaoCommandHandler>();
 builder.Services.AddScoped<IBuscarIntegracoesQueryHandler, BuscarIntegracoesQueryHandler>();
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseStorage(
+        new MySqlStorage(
+            connectionString,
+            new MySqlStorageOptions
+            {
+                QueuePollInterval = TimeSpan.FromSeconds(10),
+                JobExpirationCheckInterval = TimeSpan.FromHours(1),
+                CountersAggregateInterval = TimeSpan.FromMinutes(5),
+                PrepareSchemaIfNecessary = true,
+                DashboardJobListLimit = 25000,
+                TransactionTimeout = TimeSpan.FromMinutes(1),
+                TablesPrefix = "Hangfire",
+            }
+        )
+    ));
 
+builder.Services.AddHangfireServer();
 
 var app = builder.Build();
 
@@ -45,6 +67,8 @@ app.UseCors("AllowOrigin");
 
 app.UseHttpsRedirection();
 
+app.UseHanfire();
+app.MapHangfireDashboard();
 app.UseAuthorization();
 
 app.MapControllers();
