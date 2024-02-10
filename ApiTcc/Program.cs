@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Hangfire;
 using Hangfire.SqlServer;
 using Hangfire.MySql;
+using Application.Alunos.Queries;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,8 @@ builder.Services.AddDbContext<BotuContext>(options =>
 builder.Services.AddScoped<IBotuContext, BotuContext>();
 builder.Services.AddScoped<IAdicionarIntegracaoCommandHandler, AdicionarIntegracaoCommandHandler>();
 builder.Services.AddScoped<IBuscarIntegracoesQueryHandler, BuscarIntegracoesQueryHandler>();
+builder.Services.AddScoped<IBuscarAlunoQueryHandler, BuscarAlunoQueryHandler>();
+
 builder.Services.AddHangfire(configuration => configuration
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
     .UseSimpleAssemblyNameTypeSerializer()

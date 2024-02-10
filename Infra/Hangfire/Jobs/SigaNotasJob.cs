@@ -15,10 +15,10 @@ namespace Infra.Hangfire.Jobs
 
         public SigaNotasJob()
         {
-            _options = new ChromeOptions();
-            _driver = new ChromeDriver(_options);
-            _options.AddArgument("--headless");
-            _url = "https://siga.udesc.br/sigaSecurityG5/login.jsf?tipoLogin=PADRAO&motivo=SESSAO_EXPIRADA&evento=logout&uri-retorno=login.jsf&execIframe=&codigoSistemaLogout=";
+            //_options = new ChromeOptions();
+            //_driver = new ChromeDriver(_options);
+            //_options.AddArgument("--headless");
+            //_url = "https://siga.udesc.br/sigaSecurityG5/login.jsf?tipoLogin=PADRAO&motivo=SESSAO_EXPIRADA&evento=logout&uri-retorno=login.jsf&execIframe=&codigoSistemaLogout=";
         }
 
         public async Task<GenericCommandResult> Run()
@@ -27,13 +27,13 @@ namespace Infra.Hangfire.Jobs
             {
                 using (_driver)
                 {
-                    _driver.Navigate().GoToUrl(_url);
-                    LogarSiga("12446363989", "Jv5626$$");
+                    //_driver.Navigate().GoToUrl(_url);
+                    //LogarSiga("12446363989", "Jv5626$$");
 
-                    NavegarTelaNotasFaltas();
-                    var informacoes = CapturarInformacoesNotaParcial();
+                    //NavegarTelaNotasFaltas();
+                    //var informacoes = CapturarInformacoesNotaParcial();
 
-                    var listDisciplinas = TransferirInformacoesParaDisciplinas(informacoes);
+                    //var listDisciplinas = TransferirInformacoesParaDisciplinas(informacoes);
 
                     return new GenericCommandResult(true, "Dados coletados com sucesso", "");
                 }

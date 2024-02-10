@@ -26,7 +26,9 @@ namespace Application.Integracoes.Command
 
         public void Handle(AdicionarIntegracaoCommand AdicionarIntegracaoCommand)
         {
-            var aluno = _botuContext.Alunos.FirstOrDefault(x => x.Id == AdicionarIntegracaoCommand.AlunoId);
+            var aluno = _botuContext.Alunos
+                .FirstOrDefault(x => x.Id == AdicionarIntegracaoCommand.AlunoId);
+            
             var faculdade = _botuContext.FaculdadeAluno.FirstOrDefault(x => x.Aluno.Id == AdicionarIntegracaoCommand.AlunoId).Faculdade;
             var faculdade1 = aluno.Faculdade.FirstOrDefault();
 
