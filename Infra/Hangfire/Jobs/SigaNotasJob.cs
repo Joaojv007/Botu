@@ -12,12 +12,14 @@ namespace Infra.Hangfire.Jobs
         private ChromeOptions _options { get; set; }
         private readonly string _url;
         private readonly ChromeDriver _driver;
+        private readonly IBotuContext _botuContext;
 
-        public SigaNotasJob()
+        public SigaNotasJob(IBotuContext botuContext)
         {
+            _botuContext = botuContext;
             _options = new ChromeOptions();
+            //_options.AddArgument("--headless");
             _driver = new ChromeDriver(_options);
-            _options.AddArgument("--headless");
             _url = "https://siga.udesc.br/sigaSecurityG5/login.jsf?tipoLogin=PADRAO&motivo=SESSAO_EXPIRADA&evento=logout&uri-retorno=login.jsf&execIframe=&codigoSistemaLogout=";
         }
 
@@ -27,21 +29,37 @@ namespace Infra.Hangfire.Jobs
             {
                 using (_driver)
                 {
-                    _driver.Navigate().GoToUrl(_url);
-                    LogarSiga("12446363989", "Jv5626$$");
+                    var integracoesPendentesSiga = _botuContext.Integracoes.Where(x => x.TipoIntegracao == ApiTcc.Negocio.Enums.EnumTipoIntegracao.Siga).ToList();
+                    foreach (var integracao in integracoesPendentesSiga)
+                    {
+                        ExecutarIntegracao(integracao);
+                    }
 
-                    NavegarTelaNotasFaltas();
-                    var informacoes = CapturarInformacoesNotaParcial();
-
-                    var listDisciplinas = TransferirInformacoesParaDisciplinas(informacoes);
-
-                    return new GenericCommandResult(true, "Dados coletados com sucesso", listDisciplinas);
+                    return new GenericCommandResult(true, "Dados coletados com sucesso", "");
                 }
             }
             catch (Exception ex)
             {
                 return new GenericCommandResult(false, "Erro ao executar o job do SIGA", ex.Message);
             }
+        }
+
+        private void ExecutarIntegracao(Integracao buscarIntegracoesPendentesSiga)
+        {
+            _driver.Navigate().GoToUrl(_url);
+            LogarSiga("12446363989", "Jv5626$$");
+
+            NavegarTelaNotasFaltas();
+            var informacoes = CapturarInformacoesNotaParcial();
+
+            var listDisciplinas = TransferirInformacoesParaDisciplinas(informacoes);
+            AdicionarDisciplinaDb(listDisciplinas);
+        }
+
+        private void AdicionarDisciplinaDb(List<Disciplina> listDisciplinas)
+        {
+            _botuContext.Disciplinas.AddRange(listDisciplinas);
+            _botuContext.SaveChanges();
         }
 
         private List<Disciplina> TransferirInformacoesParaDisciplinas(List<Dictionary<string, string>> informacoes)

@@ -32,7 +32,8 @@ namespace Infra
             RecurringJob.AddOrUpdate<SigaNotasJob>(
                 recurringJobId: "siga_notas_job",
                 methodCall: sigaNotasJob => sigaNotasJob.Run(),
-                cronExpression: "* * * * *",
+                //cronExpression: Cron.Daily,
+                cronExpression: "0 0 0 * * ?",
                 options: options
             );
         }
