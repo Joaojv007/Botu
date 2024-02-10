@@ -15,10 +15,10 @@ namespace Infra.Hangfire.Jobs
 
         public SigaNotasJob()
         {
-            //_options = new ChromeOptions();
-            //_driver = new ChromeDriver(_options);
-            //_options.AddArgument("--headless");
-            //_url = "https://siga.udesc.br/sigaSecurityG5/login.jsf?tipoLogin=PADRAO&motivo=SESSAO_EXPIRADA&evento=logout&uri-retorno=login.jsf&execIframe=&codigoSistemaLogout=";
+            _options = new ChromeOptions();
+            _driver = new ChromeDriver(_options);
+            _options.AddArgument("--headless");
+            _url = "https://siga.udesc.br/sigaSecurityG5/login.jsf?tipoLogin=PADRAO&motivo=SESSAO_EXPIRADA&evento=logout&uri-retorno=login.jsf&execIframe=&codigoSistemaLogout=";
         }
 
         public async Task<GenericCommandResult> Run()
@@ -27,15 +27,15 @@ namespace Infra.Hangfire.Jobs
             {
                 using (_driver)
                 {
-                    //_driver.Navigate().GoToUrl(_url);
-                    //LogarSiga("12446363989", "Jv5626$$");
+                    _driver.Navigate().GoToUrl(_url);
+                    LogarSiga("12446363989", "Jv5626$$");
 
-                    //NavegarTelaNotasFaltas();
-                    //var informacoes = CapturarInformacoesNotaParcial();
+                    NavegarTelaNotasFaltas();
+                    var informacoes = CapturarInformacoesNotaParcial();
 
-                    //var listDisciplinas = TransferirInformacoesParaDisciplinas(informacoes);
+                    var listDisciplinas = TransferirInformacoesParaDisciplinas(informacoes);
 
-                    return new GenericCommandResult(true, "Dados coletados com sucesso", "");
+                    return new GenericCommandResult(true, "Dados coletados com sucesso", listDisciplinas);
                 }
             }
             catch (Exception ex)
@@ -51,9 +51,11 @@ namespace Infra.Hangfire.Jobs
             {
                 var disciplina = new Disciplina();
                 disciplina.Nome = info["Disciplina"];
-                disciplina.Media = decimal.Parse(info["Nota"]);
-                //disciplina.Faltas = info["Faltas"];
-                disciplina.Frequencia = int.TryParse(info["Faltas"], out int faltas) ? faltas : 0;
+                disciplina.Media = string.IsNullOrEmpty(info["Nota"]) ? 0 : decimal.Parse(info["Nota"]);
+
+                var arrayFaltaAula = info["Faltas"].Split('/');
+                disciplina.Faltas = int.TryParse(arrayFaltaAula[0], out int faltasOut) ? faltasOut : 0;
+                disciplina.Aulas = int.TryParse(arrayFaltaAula[1], out int aulasOut) ? aulasOut : 0;
 
                 listDisciplinas.Add(disciplina);
             }
@@ -95,17 +97,17 @@ namespace Infra.Hangfire.Jobs
             return informacoes;
         }
 
-        private async void NavegarTelaNotasFaltas()
+        private void NavegarTelaNotasFaltas()
         {
-            await Task.Delay(TimeSpan.FromSeconds(5));
+            Thread.Sleep(2000);
 
             var linkElement = _driver.FindElement(By.XPath("//div[@class='ds-painelDeLinks' and @title='Notas e faltas']/a"));
             linkElement.Click();
 
-            await Task.Delay(TimeSpan.FromSeconds(5));
+            Thread.Sleep(5000);
         }
 
-        private async void LogarSiga(string login, string senha)
+        private void LogarSiga(string login, string senha)
         {
             var campoLogin = _driver.FindElement(By.Id("j_username"));
             campoLogin.SendKeys(login);
@@ -116,7 +118,7 @@ namespace Infra.Hangfire.Jobs
             var btnEntrar = _driver.FindElement(By.Id("btnLogin"));
             btnEntrar.Click();
 
-            await Task.Delay(TimeSpan.FromSeconds(5));
+            Thread.Sleep(5000);
         }
     }
 }
