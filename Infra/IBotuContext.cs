@@ -17,6 +17,7 @@ namespace Infra
         DbSet<Disciplina> Disciplinas { get; set; }
         DbSet<Avaliacao> Avaliacoes { get; set; }
         DbSet<Integracao> Integracoes { get; set; }
+        DbSet<FaculdadeAluno> FaculdadeAluno { get; set; }
         int SaveChanges();
     }
 }
