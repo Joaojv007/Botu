@@ -10,6 +10,7 @@ namespace Application.Integracoes.Command
     public class AdicionarIntegracaoCommand 
     {
         public Guid AlunoId { get; set; }
+        public Guid FaculdadeId { get; set; }
         public string Login { get; set; }
         public string Senha { get; set; }
         public EnumTipoIntegracao TipoIntegracao { get; set; }
@@ -27,10 +28,9 @@ namespace Application.Integracoes.Command
         public void Handle(AdicionarIntegracaoCommand AdicionarIntegracaoCommand)
         {
             var aluno = _botuContext.Alunos
-                .FirstOrDefault(x => x.Id == AdicionarIntegracaoCommand.AlunoId);
+                .First(x => x.Id == AdicionarIntegracaoCommand.AlunoId);
             
-            var faculdade = _botuContext.FaculdadeAluno.FirstOrDefault(x => x.Aluno.Id == AdicionarIntegracaoCommand.AlunoId).Faculdade;
-            var faculdade1 = aluno.Faculdade.FirstOrDefault();
+            var faculdade = _botuContext.Faculdades.First(x => x.Id == AdicionarIntegracaoCommand.FaculdadeId);
 
             var novaIntegracao = new Integracao
             {

@@ -4,7 +4,7 @@
     {
         public string Nome { get; set; }
         public DateTime DataNascimento { get; set; }
-        public List<Faculdade> Faculdade { get; set; }
+        public List<FaculdadeAluno> Faculdade { get; set; }
         public List<Integracao> Integracoes { get; set; }
     }
 }

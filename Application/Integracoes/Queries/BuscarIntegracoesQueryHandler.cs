@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Integracoes.Queries
 {
@@ -22,6 +23,7 @@ namespace Application.Integracoes.Queries
         public List<IntegracaoResponse> Handle(Guid AlunoId)
         {
             var integracoes = _botuContext.Integracoes
+                .Include(x => x.Faculdade)
                 .Where(x => x.Aluno.Id == AlunoId).ToList();
 
             var integracoesResponse = new List<IntegracaoResponse>();

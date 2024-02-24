@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace ApiTcc.Migrations
+namespace Infra.Migrations
 {
     [DbContext(typeof(BotuContext))]
     partial class BotuContextModelSnapshot : ModelSnapshot
@@ -135,16 +135,11 @@ namespace ApiTcc.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<Guid?>("AlunoId")
-                        .HasColumnType("char(36)");
-
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AlunoId");
 
                     b.ToTable("Faculdades");
                 });
@@ -259,17 +254,10 @@ namespace ApiTcc.Migrations
                         .HasForeignKey("SemestreId");
                 });
 
-            modelBuilder.Entity("ApiTcc.Infra.DB.Entities.Faculdade", b =>
-                {
-                    b.HasOne("ApiTcc.Infra.DB.Entities.Aluno", null)
-                        .WithMany("Faculdade")
-                        .HasForeignKey("AlunoId");
-                });
-
             modelBuilder.Entity("ApiTcc.Infra.DB.Entities.FaculdadeAluno", b =>
                 {
                     b.HasOne("ApiTcc.Infra.DB.Entities.Aluno", "Aluno")
-                        .WithMany()
+                        .WithMany("Faculdade")
                         .HasForeignKey("AlunoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

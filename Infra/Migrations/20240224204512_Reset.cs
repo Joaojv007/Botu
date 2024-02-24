@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace ApiTcc.Migrations
+namespace Infra.Migrations
 {
     /// <inheritdoc />
-    public partial class InicioDataBase : Migration
+    public partial class Reset : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -35,17 +35,11 @@ namespace ApiTcc.Migrations
                 {
                     Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     Nome = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    AlunoId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci")
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Faculdades", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Faculdades_Alunos_AlunoId",
-                        column: x => x.AlunoId,
-                        principalTable: "Alunos",
-                        principalColumn: "Id");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -66,6 +60,32 @@ namespace ApiTcc.Migrations
                         column: x => x.FaculdadeId,
                         principalTable: "Faculdades",
                         principalColumn: "Id");
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "FaculdadeAluno",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    FaculdadeId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    AlunoId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FaculdadeAluno", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FaculdadeAluno_Alunos_AlunoId",
+                        column: x => x.AlunoId,
+                        principalTable: "Alunos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_FaculdadeAluno_Faculdades_FaculdadeId",
+                        column: x => x.FaculdadeId,
+                        principalTable: "Faculdades",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -138,6 +158,7 @@ namespace ApiTcc.Migrations
                     Frequencia = table.Column<int>(type: "int", nullable: false),
                     Faltas = table.Column<int>(type: "int", nullable: false),
                     Aulas = table.Column<int>(type: "int", nullable: false),
+                    Media = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
                     Resultado = table.Column<int>(type: "int", nullable: false),
                     SemestreId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci")
                 },
@@ -193,9 +214,14 @@ namespace ApiTcc.Migrations
                 column: "SemestreId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Faculdades_AlunoId",
-                table: "Faculdades",
+                name: "IX_FaculdadeAluno_AlunoId",
+                table: "FaculdadeAluno",
                 column: "AlunoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FaculdadeAluno_FaculdadeId",
+                table: "FaculdadeAluno",
+                column: "FaculdadeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Integracoes_AlunoId",
@@ -220,10 +246,16 @@ namespace ApiTcc.Migrations
                 name: "Avaliacoes");
 
             migrationBuilder.DropTable(
+                name: "FaculdadeAluno");
+
+            migrationBuilder.DropTable(
                 name: "Integracoes");
 
             migrationBuilder.DropTable(
                 name: "Disciplinas");
+
+            migrationBuilder.DropTable(
+                name: "Alunos");
 
             migrationBuilder.DropTable(
                 name: "Semestres");
@@ -233,9 +265,6 @@ namespace ApiTcc.Migrations
 
             migrationBuilder.DropTable(
                 name: "Faculdades");
-
-            migrationBuilder.DropTable(
-                name: "Alunos");
         }
     }
 }
