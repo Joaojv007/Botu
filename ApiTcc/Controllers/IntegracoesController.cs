@@ -25,7 +25,7 @@ namespace ApiTcc.Controllers
             try
             {
                 handler.Handle(AdicionarIntegracaoCommand);
-                return Ok("Integração registrada com sucesso.");
+                return StatusCode(200, new { statusCode = HttpStatusCode.Created });
             }
             catch (Exception e)
             {

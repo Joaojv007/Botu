@@ -16,6 +16,7 @@ namespace Application.Integracoes.Command
         public EnumTipoIntegracao TipoIntegracao { get; set; }
 
     }
+
     public class AdicionarIntegracaoCommandHandler : IAdicionarIntegracaoCommandHandler
     {
         private readonly IBotuContext _botuContext;
