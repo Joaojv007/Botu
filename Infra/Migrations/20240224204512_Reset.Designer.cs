@@ -8,11 +8,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace ApiTcc.Migrations
+namespace Infra.Migrations
 {
     [DbContext(typeof(BotuContext))]
-    [Migration("20240128023150_InicioDataBase")]
-    partial class InicioDataBase
+    [Migration("20240224204512_Reset")]
+    partial class Reset
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -108,6 +108,9 @@ namespace ApiTcc.Migrations
                     b.Property<int>("Frequencia")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("Media")
+                        .HasColumnType("decimal(65,30)");
+
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -135,18 +138,34 @@ namespace ApiTcc.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<Guid?>("AlunoId")
-                        .HasColumnType("char(36)");
-
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
+                    b.ToTable("Faculdades");
+                });
+
+            modelBuilder.Entity("ApiTcc.Infra.DB.Entities.FaculdadeAluno", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("AlunoId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("FaculdadeId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
                     b.HasIndex("AlunoId");
 
-                    b.ToTable("Faculdades");
+                    b.HasIndex("FaculdadeId");
+
+                    b.ToTable("FaculdadeAluno");
                 });
 
             modelBuilder.Entity("ApiTcc.Infra.DB.Entities.Integracao", b =>
@@ -238,11 +257,23 @@ namespace ApiTcc.Migrations
                         .HasForeignKey("SemestreId");
                 });
 
-            modelBuilder.Entity("ApiTcc.Infra.DB.Entities.Faculdade", b =>
+            modelBuilder.Entity("ApiTcc.Infra.DB.Entities.FaculdadeAluno", b =>
                 {
-                    b.HasOne("ApiTcc.Infra.DB.Entities.Aluno", null)
+                    b.HasOne("ApiTcc.Infra.DB.Entities.Aluno", "Aluno")
                         .WithMany("Faculdade")
-                        .HasForeignKey("AlunoId");
+                        .HasForeignKey("AlunoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ApiTcc.Infra.DB.Entities.Faculdade", "Faculdade")
+                        .WithMany()
+                        .HasForeignKey("FaculdadeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Aluno");
+
+                    b.Navigation("Faculdade");
                 });
 
             modelBuilder.Entity("ApiTcc.Infra.DB.Entities.Integracao", b =>
