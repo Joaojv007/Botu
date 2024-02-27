@@ -46,11 +46,11 @@ namespace Infra.Hangfire.Jobs
 
         private void ExecutarIntegracao(Integracao integracao)
         {
-            if (integracao == null)
+            if (integracao != null)
             {
                 _driver.Navigate().GoToUrl(_url);
 
-                LogarSiga("12446363989", "Jv5626$$");
+                LogarSiga(integracao.Login, integracao.Senha);
 
                 NavegarTelaNotasFaltas();
                 var informacoes = CapturarInformacoesNotaParcial();
@@ -97,7 +97,7 @@ namespace Infra.Hangfire.Jobs
             var informacoes = new List<Dictionary<string, string>>();
 
             // Iterar sobre as linhas da tabela, começando da segunda linha (pois a primeira é o cabeçalho)
-            for (int i = 1; i < linhas.Count; i++)
+            for (int i = 0; i < linhas.Count; i++)
             {
                 var linha = linhas[i];
 
