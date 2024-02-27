@@ -44,16 +44,21 @@ namespace Infra.Hangfire.Jobs
             }
         }
 
-        private void ExecutarIntegracao(Integracao buscarIntegracoesPendentesSiga)
+        private void ExecutarIntegracao(Integracao integracao)
         {
-            _driver.Navigate().GoToUrl(_url);
-            LogarSiga("12446363989", "Jv5626$$");
+            if (integracao == null)
+            {
+                _driver.Navigate().GoToUrl(_url);
 
-            NavegarTelaNotasFaltas();
-            var informacoes = CapturarInformacoesNotaParcial();
+                LogarSiga("12446363989", "Jv5626$$");
 
-            var listDisciplinas = TransferirInformacoesParaDisciplinas(informacoes);
-            AdicionarDisciplinaDb(listDisciplinas);
+                NavegarTelaNotasFaltas();
+                var informacoes = CapturarInformacoesNotaParcial();
+
+                var listDisciplinas = TransferirInformacoesParaDisciplinas(informacoes);
+                AdicionarDisciplinaDb(listDisciplinas);
+            }
+
         }
 
         private void AdicionarDisciplinaDb(List<Disciplina> listDisciplinas)
