@@ -16,6 +16,7 @@ namespace ApiTcc.Infra.DB
         public DbSet<Avaliacao> Avaliacoes { get; set; }
         public DbSet<Integracao> Integracoes { get; set; }
         public DbSet<FaculdadeAluno> FaculdadeAluno { get; set; }
+        public DbSet<CursoAluno> CursoAluno { get; set; }
         //public DbSet<Comunidade> Comunidade { get; set; }
 
         public int SaveChanges() => base.SaveChanges();

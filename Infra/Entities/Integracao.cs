@@ -11,6 +11,7 @@ namespace ApiTcc.Infra.DB.Entities
         public string Senha { get; set; }
         public string ErroDescricao { get; set; }
         public bool Erro { get; set; }
+        public bool CapturouSemestresPassados { get; set; }
         public DateTime DataIntegracao { get; set; }
     }
 }
