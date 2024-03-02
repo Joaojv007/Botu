@@ -147,6 +147,7 @@ namespace Infra.Hangfire.Jobs
 
                 // Clicar no ícone para esticar o dropdown
                 iconeDropdown.Click();
+                Thread.Sleep(1000);
             }
             else
             {
@@ -209,7 +210,7 @@ namespace Infra.Hangfire.Jobs
             var opcaoSemestre = _driver.FindElement(By.XPath($"//span[text()='{semestre.Nome}']"));
             opcaoSemestre.Click();
 
-            SelecionarNotaParcial();
+            SelecionarNotaParcialMetodoDiferente();
 
             var tabela = _driver.FindElement(By.Id("formPrincipal:notasFaltas_data"));
             var linhas = tabela.FindElements(By.TagName("tr"));
@@ -237,6 +238,30 @@ namespace Infra.Hangfire.Jobs
             return informacoes;
         }
 
+        private void SelecionarNotaParcialMetodoDiferente()
+        {
+            IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
+            EsticarDropdown(2);
+
+            js.ExecuteScript("$('tr[data-item-label*=\\\"Nota Parcial\\\"]').click()");
+            Thread.Sleep(2000);
+            Console.WriteLine("passou SelecionarNotaParcialMetodoDiferente");
+        }
+        
+        private void SelecionarNotaParcialMetodoDiferenteB()
+        {
+            IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
+            js.ExecuteScript("$('span[class*=\\\"fa fa-search\\\"]').eq(2).click();");
+            Thread.Sleep(2000);
+            js.ExecuteScript("$('td[role*=\\\"gridcell\\\"]').eq(0).click();");
+
+            //$("span[class*='fa fa-search']")[2].click()
+            //$('td[role*="gridcell"]')[0].click()
+
+
+            Console.WriteLine("passou SelecionarNotaParcialMetodoDiferente");
+        }
+        
         private void SelecionarNotaParcial()
         {
             EsticarDropdown(2);
@@ -245,7 +270,7 @@ namespace Infra.Hangfire.Jobs
 
             //WaitForElementToBeClickable(opcaoNotaElemento, 10);
 
-            Recursiva(true);
+            //Recursiva(true);
             Console.WriteLine("WTF");
 
         }
@@ -278,30 +303,6 @@ namespace Infra.Hangfire.Jobs
         //    //https://stackoverflow.com/questions/45002008/selenium-stale-element-reference-element-is-not-attached-to-the-page
         //    //https://groups.google.com/g/selenium-users/c/RauvQ6-kbLo
         //}
-
-        private void WaitForElementToBeClickable(IWebElement element, int timeoutInSeconds)
-        {
-            var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(timeoutInSeconds));
-            wait.Until(driver =>
-            {
-                try
-                {
-                    // Verifica se o elemento está presente e clicável
-                    if (element != null && element.Displayed && element.Enabled)
-                    {
-                        return true;
-                    }
-                    return false;
-                }
-                catch (Exception e)
-                {
-                    return false;
-                }
-            });
-        }
-
-
-
 
         private void NavegarTelaNotasFaltas()
         {
