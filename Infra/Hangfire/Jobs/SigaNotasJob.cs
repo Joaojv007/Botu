@@ -31,8 +31,6 @@ namespace Infra.Hangfire.Jobs
             {
                 using (_driver)
                 {
-                    //_driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(20);
-
                     var integracoesPendentesSiga = _botuContext.Integracoes
                         .Include(x => x.Aluno)
                         .Where(x => x.TipoIntegracao == ApiTcc.Negocio.Enums.EnumTipoIntegracao.Siga)
@@ -75,6 +73,7 @@ namespace Infra.Hangfire.Jobs
                     semestre.Disciplinas.AddRange(TransferirInformacoesParaDisciplinas(informacoesNotaParcial));
                 }
 
+                integracao.CapturouSemestresPassados = true;
                 AdicionarSemestreDb(listSemestres);
             }
 
@@ -91,12 +90,9 @@ namespace Infra.Hangfire.Jobs
             // Clicar no ícone para abrir o dropdown
             EsticarDropdown(0);
 
-            Thread.Sleep(1000);
-
             // Encontrar o painel do dropdown agora que ele está visível
             var dropdownPanel = _driver.FindElement(By.Id("formPrincipal:input_filtro_aca_periodo_letivo_campo_panel"));
 
-            Thread.Sleep(1000);
             // Verificar se o painel dropdown está visível
             if (dropdownPanel.Displayed)
             {
@@ -123,39 +119,6 @@ namespace Infra.Hangfire.Jobs
                 return new List<Dictionary<string, string>>();
             }
         }
-
-        //private void EsticarDropdown(string dropdown)
-        //{
-        //    var iconeDropdown = _driver.FindElement(By.CssSelector(dropdown));
-        //    iconeDropdown.Click();
-        //}
-
-        private void EsticarDropdown(int indice)
-        {
-            Thread.Sleep(1000);
-
-            // Localizar todos os elementos com a classe iconeCampo.fa.fa-caret-square-o-down
-            var elementosDropdown = _driver.FindElements(By.CssSelector("i.iconeCampo.fa.fa-caret-square-o-down"));
-
-            Thread.Sleep(1000);
-
-            // Verificar se foram encontrados elementos
-            if (elementosDropdown.Count > 0)
-            {
-                // Selecionar o primeiro elemento encontrado (ou o que for adequado)
-                var iconeDropdown = elementosDropdown[indice];
-
-                // Clicar no ícone para esticar o dropdown
-                iconeDropdown.Click();
-                Thread.Sleep(1000);
-            }
-            else
-            {
-                // Caso nenhum elemento seja encontrado, você pode lidar com isso de acordo com a lógica do seu programa
-                Console.WriteLine("Nenhum elemento iconeCampo.fa.fa-caret-square-o-down encontrado.");
-            }
-        }
-
 
         private void AdicionarDisciplinaDb(List<Disciplina> listDisciplinas)
         {
@@ -202,15 +165,13 @@ namespace Infra.Hangfire.Jobs
         private List<Dictionary<string, string>> CapturarInformacoesNotaParcial(Semestre semestre)
         {
             EsticarDropdown(0);
-            Thread.Sleep(1000);
             var inputDropdown = _driver.FindElement(By.CssSelector("input[title*='Informe o período letivo']"));
-            Thread.Sleep(1000);
             inputDropdown.Click();
-            Thread.Sleep(1000);
+            Thread.Sleep(500);
             var opcaoSemestre = _driver.FindElement(By.XPath($"//span[text()='{semestre.Nome}']"));
             opcaoSemestre.Click();
 
-            SelecionarNotaParcialMetodoDiferente();
+            SelecionarNotaParcial();
 
             var tabela = _driver.FindElement(By.Id("formPrincipal:notasFaltas_data"));
             var linhas = tabela.FindElements(By.TagName("tr"));
@@ -238,80 +199,22 @@ namespace Infra.Hangfire.Jobs
             return informacoes;
         }
 
-        private void SelecionarNotaParcialMetodoDiferente()
+        private void SelecionarNotaParcial()
         {
             IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
             EsticarDropdown(2);
 
             js.ExecuteScript("$('tr[data-item-label*=\\\"Nota Parcial\\\"]').click()");
-            Thread.Sleep(2000);
-            Console.WriteLine("passou SelecionarNotaParcialMetodoDiferente");
+            Thread.Sleep(500);
         }
-        
-        private void SelecionarNotaParcialMetodoDiferenteB()
-        {
-            IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;
-            js.ExecuteScript("$('span[class*=\\\"fa fa-search\\\"]').eq(2).click();");
-            Thread.Sleep(2000);
-            js.ExecuteScript("$('td[role*=\\\"gridcell\\\"]').eq(0).click();");
-
-            //$("span[class*='fa fa-search']")[2].click()
-            //$('td[role*="gridcell"]')[0].click()
-
-
-            Console.WriteLine("passou SelecionarNotaParcialMetodoDiferente");
-        }
-        
-        private void SelecionarNotaParcial()
-        {
-            EsticarDropdown(2);
-            var inputNota = _driver.FindElement(By.CssSelector("input[title*='Informe uma nota para visualizar']"));
-            inputNota.Click();
-
-            //WaitForElementToBeClickable(opcaoNotaElemento, 10);
-
-            //Recursiva(true);
-            Console.WriteLine("WTF");
-
-        }
-
-        private void Recursiva(bool nsai) 
-        {
-            while (nsai)
-            {
-                try
-                {
-                    //var opcaoNotaElemento = _driver.FindElement(By.CssSelector("tr[data-item-label*='Nota Parcial']"));                    
-                    var opcaoNotaElemento = _driver.FindElement(By.XPath("/html/body/div[9]/table/tbody/tr[1]/td"));
-                    opcaoNotaElemento.Click();
-                    Console.WriteLine("EITA");
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"Erro ao tentar encontrar ou clicar no elemento: {e.Message}");
-                    var teste = e;
-                    Recursiva(true);
-                }
-            }
-        }
-
-        //private void SelecionarNotaParcial()
-        //{
-        //    string script = "document.querySelector(\"input[title*='Informe uma nota para visualizar']\").value = 'Media';";
-        //    _driver.ExecuteScript(script);
-        //    // tentar clicando na lupa mudando de pagina e selecionando
-        //    //https://stackoverflow.com/questions/45002008/selenium-stale-element-reference-element-is-not-attached-to-the-page
-        //    //https://groups.google.com/g/selenium-users/c/RauvQ6-kbLo
-        //}
 
         private void NavegarTelaNotasFaltas()
         {
-            Thread.Sleep(2000);
-
+            Thread.Sleep(500);
             var linkElement = _driver.FindElement(By.XPath("//div[@class='ds-painelDeLinks' and @title='Notas e faltas']/a"));
             linkElement.Click();
 
-            Thread.Sleep(5000);
+            Thread.Sleep(500);
         }
 
         private void LogarSiga(string login, string senha)
@@ -325,7 +228,31 @@ namespace Infra.Hangfire.Jobs
             var btnEntrar = _driver.FindElement(By.Id("btnLogin"));
             btnEntrar.Click();
 
-            Thread.Sleep(5000);
+            Thread.Sleep(500);
+        }
+
+        private void EsticarDropdown(int indice)
+        {
+            Thread.Sleep(500);
+
+            // Localizar todos os elementos com a classe iconeCampo.fa.fa-caret-square-o-down
+            var elementosDropdown = _driver.FindElements(By.CssSelector("i.iconeCampo.fa.fa-caret-square-o-down"));
+
+            // Verificar se foram encontrados elementos
+            if (elementosDropdown.Count > 0)
+            {
+                // Selecionar o primeiro elemento encontrado (ou o que for adequado)
+                var iconeDropdown = elementosDropdown[indice];
+
+                // Clicar no ícone para esticar o dropdown
+                iconeDropdown.Click();
+                Thread.Sleep(500);
+            }
+            else
+            {
+                // Caso nenhum elemento seja encontrado, você pode lidar com isso de acordo com a lógica do seu programa
+                Console.WriteLine("Nenhum elemento iconeCampo.fa.fa-caret-square-o-down encontrado.");
+            }
         }
     }
 }
