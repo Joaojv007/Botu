@@ -22,10 +22,12 @@ namespace Application.Integracoes.Queries
 
         public async Task<List<Curso>> Handle(Guid alunoId)
         {
-            var faculdadeAluno = await _botuContext.FaculdadeAluno
+            var faculdadeAluno = _botuContext.FaculdadeAluno
                 .Include(x => x.Faculdade)
+                .ThenInclude(x => x.Cursos)
                 .Include(x => x.Aluno)
-                .FirstOrDefaultAsync(x => x.Aluno.Id == alunoId);
+                .First(x => x.Aluno.Id == alunoId);
+
 
             return faculdadeAluno.Faculdade.Cursos;
         }

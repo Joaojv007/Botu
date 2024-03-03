@@ -16,8 +16,7 @@ namespace ApiTcc.Controllers
         {
         }
         
-        [HttpGet()]
-        [ActionName("GetDisciplinas")]
+        [HttpGet("GetDisciplinas")]
         public IActionResult GetDisciplinas(
             [FromQuery] Guid AlunoId,  
             [FromQuery] Guid Semestre,  
@@ -34,8 +33,7 @@ namespace ApiTcc.Controllers
             }
         }
         
-        [HttpGet()]
-        [ActionName("GetSemestres")]
+        [HttpGet("GetSemestres")]
         public IActionResult GetSemestres(
             [FromQuery] Guid AlunoId,  
             [FromQuery] Guid CursoId,  
@@ -52,11 +50,9 @@ namespace ApiTcc.Controllers
             }
         }
         
-        [HttpGet()]
-        [ActionName("GetCursos")]
+        [HttpGet("GetCursos")]
         public IActionResult GetCursos(
             [FromQuery] Guid AlunoId,  
-            [FromQuery] Guid CursoId,  
             [FromServices] IBuscarCursosQueryHandler queryHandler)
         {
             try

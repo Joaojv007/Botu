@@ -22,9 +22,10 @@ namespace Application.Integracoes.Queries
 
         public async Task<List<Disciplina>> Handle(Guid AlunoId, Guid Semestre)
         {
-            var semestre = await _botuContext.Semestres
+            var semestre = _botuContext.Semestres
                 .Include(x => x.Disciplinas)
-                .FirstOrDefaultAsync(x => x.Id == Semestre);
+                .ThenInclude(x => x.Avaliacoes)
+                .FirstOrDefault(x => x.Id == Semestre);
 
             return semestre.Disciplinas;
         }
