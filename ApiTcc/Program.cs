@@ -34,6 +34,9 @@ builder.Services.AddScoped<IBotuContext, BotuContext>();
 builder.Services.AddScoped<IAdicionarIntegracaoCommandHandler, AdicionarIntegracaoCommandHandler>();
 builder.Services.AddScoped<IBuscarIntegracoesQueryHandler, BuscarIntegracoesQueryHandler>();
 builder.Services.AddScoped<IBuscarAlunoQueryHandler, BuscarAlunoQueryHandler>();
+builder.Services.AddScoped<IBuscarDisciplinasQueryHandler, BuscarDisciplinasQueryHandler>();
+builder.Services.AddScoped<IBuscarSemestresQueryHandler, BuscarSemestresQueryHandler>();
+builder.Services.AddScoped<IBuscarCursosQueryHandler, BuscarCursosQueryHandler>();
 
 builder.Services.AddHangfire(configuration => configuration
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
