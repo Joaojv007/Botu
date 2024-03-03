@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using ApiTcc.Infra.DB.Entities;
 using Microsoft.EntityFrameworkCore;
 using OpenQA.Selenium;
@@ -71,12 +72,60 @@ namespace Infra.Hangfire.Jobs
                 {
                     var informacoesNotaParcial = CapturarInformacoesNotaParcial(semestre);
                     semestre.Disciplinas.AddRange(TransferirInformacoesParaDisciplinas(informacoesNotaParcial));
+
+                    var notasParciaisElements = _driver.FindElements(By.CssSelector("a[title*='Clique aqui para visualizar as avaliações parciais que compõem esta nota.']"));
+                    //if (semestre.Id == listSemestres.First().Id)
+                    if (true)
+                    {
+                        for (int i = 0; i < notasParciaisElements.Count; i++)
+                        {
+                            var infoMedia = informacoesNotaParcial;
+                            if (infoMedia[i]["IsLabel"] == "False")
+                            {
+                                _driver.ExecuteScript($"$('a[title*=\\\"Clique aqui para visualizar as avaliações parciais que compõem esta nota.\\\"]')[{i}].click()");
+                                Thread.Sleep(500);
+                                var informacoesAvaliacoes = CapturarInformacoesAvaliacoes();
+
+                                List<Avaliacao> avaliacoes = TransferirInformacoesParaAvaliacoes(informacoesAvaliacoes);
+                                semestre.Disciplinas[i].Avaliacoes = semestre.Disciplinas[i].Avaliacoes == null ? new List<Avaliacao>() : semestre.Disciplinas[i].Avaliacoes;
+                                semestre.Disciplinas[i].Avaliacoes.AddRange(avaliacoes);
+
+                                _driver.Navigate().Back();
+                                Thread.Sleep(500);
+                                IrParaSemestre(semestre);
+                                SelecionarNotaParcial();
+                                Thread.Sleep(500);
+                            }
+                        }
+                    }
                 }
 
                 integracao.CapturouSemestresPassados = true;
                 AdicionarSemestreDb(listSemestres);
             }
 
+        }
+
+        private List<Avaliacao> TransferirInformacoesParaAvaliacoes(List<Dictionary<string, string>> informacoesAvaliacacoes)
+        {
+            var listAva = new List<Avaliacao>();
+            foreach (var info in informacoesAvaliacacoes)
+            {
+                var avaliacao = new Avaliacao();
+                avaliacao.Nome = info["Avaliação"];
+
+                DateTime data;
+                DateTime.TryParseExact(info["Data"], "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out data);                
+                avaliacao.DataEntrega = data;
+
+                avaliacao.Conteudo = info["Conteúdo"];
+                avaliacao.TipoTarefa = ApiTcc.Negocio.Enums.EnumTipoAvaliacao.Prova;
+                avaliacao.Nota = string.IsNullOrEmpty(info["Nota"]) ? 0 : decimal.Parse(info["Nota"]);
+
+                listAva.Add(avaliacao);
+            }
+
+            return listAva;
         }
 
         private void AdicionarSemestreDb(List<Semestre> listSemestres)
@@ -164,12 +213,7 @@ namespace Infra.Hangfire.Jobs
 
         private List<Dictionary<string, string>> CapturarInformacoesNotaParcial(Semestre semestre)
         {
-            EsticarDropdown(0);
-            var inputDropdown = _driver.FindElement(By.CssSelector("input[title*='Informe o período letivo']"));
-            inputDropdown.Click();
-            Thread.Sleep(500);
-            var opcaoSemestre = _driver.FindElement(By.XPath($"//span[text()='{semestre.Nome}']"));
-            opcaoSemestre.Click();
+            IrParaSemestre(semestre);
 
             SelecionarNotaParcial();
 
@@ -187,13 +231,56 @@ namespace Infra.Hangfire.Jobs
                 var nota = colunas[1].Text;
                 var faltas = colunas[2].Text;
 
+                var notaElement = colunas[1]; // Tenta encontrar um link dentro da coluna
+                var innerHTML = notaElement.GetAttribute("innerHTML"); // Tenta encontrar um link dentro da coluna
+
                 var infoDisciplina = new Dictionary<string, string>
                 {
                     { "Disciplina", disciplina },
                     { "Nota", nota },
-                    { "Faltas", faltas }
+                    { "Faltas", faltas },
+                    { "IsLabel", innerHTML.Contains("</label>").ToString() } // Adiciona o tipo de nota (Link ou Label) ao dicionário
                 };
                 informacoes.Add(infoDisciplina);
+            }
+
+            return informacoes;
+        }
+
+        private void IrParaSemestre(Semestre semestre)
+        {
+            EsticarDropdown(0);
+            var inputDropdown = _driver.FindElement(By.CssSelector("input[title*='Informe o período letivo']"));
+            inputDropdown.Click();
+            Thread.Sleep(500);
+            var opcaoSemestre = _driver.FindElement(By.XPath($"//span[text()='{semestre.Nome}']"));
+            opcaoSemestre.Click();
+        }
+
+        public List<Dictionary<string, string>> CapturarInformacoesAvaliacoes()
+        {
+            var tabela = _driver.FindElement(By.Id("formPrincipal:notasParciais_data"));
+            var linhas = tabela.FindElements(By.TagName("tr"));
+
+            var informacoes = new List<Dictionary<string, string>>();
+
+            foreach (var linha in linhas)
+            {
+                var colunas = linha.FindElements(By.TagName("td"));
+
+                var avaliacao = colunas[0].Text;
+                var data = colunas[1].Text;
+                var conteudo = colunas[2].Text;
+                var nota = colunas[3].Text;
+
+                var infoNotaParcial = new Dictionary<string, string>
+                {
+                    { "Avaliação", avaliacao },
+                    { "Data", data },
+                    { "Conteúdo", conteudo },
+                    { "Nota", nota }
+                };
+                informacoes.Add(infoNotaParcial);
             }
 
             return informacoes;
