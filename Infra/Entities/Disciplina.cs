@@ -10,5 +10,8 @@
         public decimal Media { get; set; }
         public List<Avaliacao> Avaliacoes { get; set; }
         public int Resultado { get; set; }
+        public Guid SemestreId { get; set; }
+        public Semestre Semestre { get; set; }
+
     }
 }

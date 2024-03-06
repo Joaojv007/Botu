@@ -16,6 +16,7 @@ namespace Infra.Hangfire.Jobs
         private readonly ChromeDriver _driver;
         private readonly IBotuContext _botuContext;
         private Guid _alunoId;
+        private Integracao _integracao;
 
         public SigaNotasJob(IBotuContext botuContext)
         {
@@ -34,12 +35,15 @@ namespace Infra.Hangfire.Jobs
                 {
                     var integracoesPendentesSiga = _botuContext.Integracoes
                         .Include(x => x.Aluno)
+                        .Include(x => x.Faculdade)
+                        .ThenInclude(x => x.Cursos)
                         .Where(x => x.TipoIntegracao == ApiTcc.Negocio.Enums.EnumTipoIntegracao.Siga)
                         .ToList();
 
                     foreach (var integracao in integracoesPendentesSiga)
                     {
                         _alunoId = integracao.Aluno.Id;
+                        _integracao = integracao;
                         ExecutarIntegracao(integracao);
                     }
 
@@ -74,28 +78,26 @@ namespace Infra.Hangfire.Jobs
                     semestre.Disciplinas.AddRange(TransferirInformacoesParaDisciplinas(informacoesNotaParcial));
 
                     var notasParciaisElements = _driver.FindElements(By.CssSelector("a[title*='Clique aqui para visualizar as avaliações parciais que compõem esta nota.']"));
-                    //if (semestre.Id == listSemestres.First().Id)
-                    if (true)
+                    for (int i = 0; i < notasParciaisElements.Count; i++)
                     {
-                        for (int i = 0; i < notasParciaisElements.Count; i++)
+                        var infoMedia = informacoesNotaParcial;
+                        if (infoMedia[i]["IsLabel"] == "False")
                         {
-                            var infoMedia = informacoesNotaParcial;
-                            if (infoMedia[i]["IsLabel"] == "False")
-                            {
-                                _driver.ExecuteScript($"$('a[title*=\\\"Clique aqui para visualizar as avaliações parciais que compõem esta nota.\\\"]')[{i}].click()");
-                                Thread.Sleep(500);
-                                var informacoesAvaliacoes = CapturarInformacoesAvaliacoes();
+                            _driver.ExecuteScript($"$('a[title*=\\\"Clique aqui para visualizar as avaliações parciais que compõem esta nota.\\\"]')[{i}].click()");
+                            Thread.Sleep(1000);
+                            var informacoesAvaliacoes = CapturarInformacoesAvaliacoes();
 
-                                List<Avaliacao> avaliacoes = TransferirInformacoesParaAvaliacoes(informacoesAvaliacoes);
-                                semestre.Disciplinas[i].Avaliacoes = semestre.Disciplinas[i].Avaliacoes == null ? new List<Avaliacao>() : semestre.Disciplinas[i].Avaliacoes;
-                                semestre.Disciplinas[i].Avaliacoes.AddRange(avaliacoes);
+                            List<Avaliacao> avaliacoes = TransferirInformacoesParaAvaliacoes(informacoesAvaliacoes);
+                            semestre.Disciplinas[i].Avaliacoes = semestre.Disciplinas[i].Avaliacoes == null ? new List<Avaliacao>() : semestre.Disciplinas[i].Avaliacoes;
+                            semestre.Disciplinas[i].Avaliacoes.AddRange(avaliacoes);
 
-                                _driver.Navigate().Back();
-                                Thread.Sleep(500);
-                                IrParaSemestre(semestre);
-                                SelecionarNotaParcial();
-                                Thread.Sleep(500);
-                            }
+                            //_driver.Navigate().Back();
+                            _driver.Navigate().GoToUrl("https://siga.udesc.br/sigaMentorWebG5/jsf/dashboard.xhtml");
+                            NavegarTelaNotasFaltas();
+                            Thread.Sleep(1000);
+                            IrParaSemestre(semestre);
+                            SelecionarNotaParcial();
+                            Thread.Sleep(500);
                         }
                     }
                 }
@@ -130,7 +132,26 @@ namespace Infra.Hangfire.Jobs
 
         private void AdicionarSemestreDb(List<Semestre> listSemestres)
         {
-            _botuContext.Semestres.AddRange(listSemestres);
+            foreach (var semestre in listSemestres)
+            {
+                var semestresExistente = _botuContext.Semestres
+                    .Include(x => x.Disciplinas)
+                    .ThenInclude(x => x.Avaliacoes)
+                    .FirstOrDefault(x => x.Nome == semestre.Nome);
+
+                if (semestresExistente != null)
+                {
+                    _botuContext.Semestres.Remove(semestresExistente);
+                    semestre.DataFinal = DateTime.Now;
+                    _botuContext.Semestres.AddAsync(semestre);
+                }
+                else
+                {
+                    semestre.DataFinal = DateTime.Now;
+                    _botuContext.Semestres.AddAsync(semestre);
+                }
+            }
+
             _botuContext.SaveChanges();
         }
 
@@ -169,12 +190,6 @@ namespace Infra.Hangfire.Jobs
             }
         }
 
-        private void AdicionarDisciplinaDb(List<Disciplina> listDisciplinas)
-        {
-            _botuContext.Disciplinas.AddRange(listDisciplinas);
-            _botuContext.SaveChanges();
-        }
-
         private List<Disciplina> TransferirInformacoesParaDisciplinas(List<Dictionary<string, string>> informacoes)
         {
             var listDisciplinas = new List<Disciplina>();
@@ -204,6 +219,7 @@ namespace Infra.Hangfire.Jobs
                 semestre.Nome = info["Label"];
                 semestre.AlunoId = _alunoId;
                 semestre.Disciplinas = new List<Disciplina>();
+                semestre.CursoId = _integracao.Faculdade.Cursos.FirstOrDefault(x => x.IsCursando == true).Id;
 
                 listSemestre.Add(semestre);
             }
@@ -297,10 +313,10 @@ namespace Infra.Hangfire.Jobs
 
         private void NavegarTelaNotasFaltas()
         {
-            Thread.Sleep(500);
+            Thread.Sleep(2000);
             var linkElement = _driver.FindElement(By.XPath("//div[@class='ds-painelDeLinks' and @title='Notas e faltas']/a"));
+            Thread.Sleep(500);
             linkElement.Click();
-
             Thread.Sleep(500);
         }
 
@@ -320,8 +336,7 @@ namespace Infra.Hangfire.Jobs
 
         private void EsticarDropdown(int indice)
         {
-            Thread.Sleep(500);
-
+            Thread.Sleep(1000);
             // Localizar todos os elementos com a classe iconeCampo.fa.fa-caret-square-o-down
             var elementosDropdown = _driver.FindElements(By.CssSelector("i.iconeCampo.fa.fa-caret-square-o-down"));
 
@@ -331,14 +346,38 @@ namespace Infra.Hangfire.Jobs
                 // Selecionar o primeiro elemento encontrado (ou o que for adequado)
                 var iconeDropdown = elementosDropdown[indice];
 
+                Thread.Sleep(2000);
                 // Clicar no ícone para esticar o dropdown
                 iconeDropdown.Click();
-                Thread.Sleep(500);
+                Thread.Sleep(1000);
             }
             else
             {
                 // Caso nenhum elemento seja encontrado, você pode lidar com isso de acordo com a lógica do seu programa
                 Console.WriteLine("Nenhum elemento iconeCampo.fa.fa-caret-square-o-down encontrado.");
+            }
+        }
+        
+        private void EsticarDropdownJS(int indice)
+        {
+            Thread.Sleep(500);
+            // Localizar todos os elementos com a classe iconeCampo.fa.fa-caret-square-o-down
+            var elementosDropdown = _driver.ExecuteScript("$('i[class*=\\\"iconeCampo fa fa - caret - square - o - down\\\"]')");
+
+            // Verificar se foram encontrados elementos
+            if (indice == 0)
+            {
+                _driver.ExecuteScript("$('#formPrincipal\\\\:input_filtro_aca_periodo_letivo_idd')[0].click();");
+            }
+
+            if (indice == 1)
+            {
+                _driver.ExecuteScript("$(\\\"#formPrincipal\\:input_filtro_aca_periodo_letivo_idd\\\").click();");
+            }
+
+            if (indice == 2)
+            {
+                _driver.ExecuteScript("$(\\\"#formPrincipal\\:input_filtro_aca_periodo_letivo_idd\\\").click();");
             }
         }
     }
