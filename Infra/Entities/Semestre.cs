@@ -9,5 +9,6 @@ namespace ApiTcc.Infra.DB.Entities
         public DateTime? DataFinal { get; set; }
         public List<Disciplina> Disciplinas { get; set; }
         public Guid AlunoId { get; set; }
+        public Guid CursoId { get; set; }
     }
 }

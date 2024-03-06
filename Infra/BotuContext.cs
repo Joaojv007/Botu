@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ApiTcc.Infra.DB
 {
-    public class BotuContext : DbContext , IBotuContext
+    public class BotuContext : DbContext, IBotuContext
     {
         public BotuContext(DbContextOptions<BotuContext> options) : base(options) { }
 
@@ -20,5 +20,21 @@ namespace ApiTcc.Infra.DB
         //public DbSet<Comunidade> Comunidade { get; set; }
 
         public int SaveChanges() => base.SaveChanges();
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Semestre>()
+                .HasMany(s => s.Disciplinas)
+                .WithOne(d => d.Semestre)
+                .HasForeignKey(d => d.SemestreId) // Chave estrangeira para Semestre
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Disciplina>()
+                .HasMany(d => d.Avaliacoes)
+                .WithOne(a => a.Disciplina)
+                .HasForeignKey(a => a.DisciplinaId) // Chave estrangeira para Disciplina
+                .OnDelete(DeleteBehavior.Cascade);
+        }
+
     }
 }

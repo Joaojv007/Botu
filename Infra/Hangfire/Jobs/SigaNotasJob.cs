@@ -16,6 +16,7 @@ namespace Infra.Hangfire.Jobs
         private readonly ChromeDriver _driver;
         private readonly IBotuContext _botuContext;
         private Guid _alunoId;
+        private Integracao _integracao;
 
         public SigaNotasJob(IBotuContext botuContext)
         {
@@ -34,12 +35,15 @@ namespace Infra.Hangfire.Jobs
                 {
                     var integracoesPendentesSiga = _botuContext.Integracoes
                         .Include(x => x.Aluno)
+                        .Include(x => x.Faculdade)
+                        .ThenInclude(x => x.Cursos)
                         .Where(x => x.TipoIntegracao == ApiTcc.Negocio.Enums.EnumTipoIntegracao.Siga)
                         .ToList();
 
                     foreach (var integracao in integracoesPendentesSiga)
                     {
                         _alunoId = integracao.Aluno.Id;
+                        _integracao = integracao;
                         ExecutarIntegracao(integracao);
                     }
 
@@ -74,28 +78,24 @@ namespace Infra.Hangfire.Jobs
                     semestre.Disciplinas.AddRange(TransferirInformacoesParaDisciplinas(informacoesNotaParcial));
 
                     var notasParciaisElements = _driver.FindElements(By.CssSelector("a[title*='Clique aqui para visualizar as avaliações parciais que compõem esta nota.']"));
-                    //if (semestre.Id == listSemestres.First().Id)
-                    if (true)
+                    for (int i = 0; i < notasParciaisElements.Count; i++)
                     {
-                        for (int i = 0; i < notasParciaisElements.Count; i++)
+                        var infoMedia = informacoesNotaParcial;
+                        if (infoMedia[i]["IsLabel"] == "False")
                         {
-                            var infoMedia = informacoesNotaParcial;
-                            if (infoMedia[i]["IsLabel"] == "False")
-                            {
-                                _driver.ExecuteScript($"$('a[title*=\\\"Clique aqui para visualizar as avaliações parciais que compõem esta nota.\\\"]')[{i}].click()");
-                                Thread.Sleep(500);
-                                var informacoesAvaliacoes = CapturarInformacoesAvaliacoes();
+                            _driver.ExecuteScript($"$('a[title*=\\\"Clique aqui para visualizar as avaliações parciais que compõem esta nota.\\\"]')[{i}].click()");
+                            Thread.Sleep(500);
+                            var informacoesAvaliacoes = CapturarInformacoesAvaliacoes();
 
-                                List<Avaliacao> avaliacoes = TransferirInformacoesParaAvaliacoes(informacoesAvaliacoes);
-                                semestre.Disciplinas[i].Avaliacoes = semestre.Disciplinas[i].Avaliacoes == null ? new List<Avaliacao>() : semestre.Disciplinas[i].Avaliacoes;
-                                semestre.Disciplinas[i].Avaliacoes.AddRange(avaliacoes);
+                            List<Avaliacao> avaliacoes = TransferirInformacoesParaAvaliacoes(informacoesAvaliacoes);
+                            semestre.Disciplinas[i].Avaliacoes = semestre.Disciplinas[i].Avaliacoes == null ? new List<Avaliacao>() : semestre.Disciplinas[i].Avaliacoes;
+                            semestre.Disciplinas[i].Avaliacoes.AddRange(avaliacoes);
 
-                                _driver.Navigate().Back();
-                                Thread.Sleep(500);
-                                IrParaSemestre(semestre);
-                                SelecionarNotaParcial();
-                                Thread.Sleep(500);
-                            }
+                            _driver.Navigate().Back();
+                            Thread.Sleep(500);
+                            IrParaSemestre(semestre);
+                            SelecionarNotaParcial();
+                            Thread.Sleep(500);
                         }
                     }
                 }
@@ -130,9 +130,69 @@ namespace Infra.Hangfire.Jobs
 
         private void AdicionarSemestreDb(List<Semestre> listSemestres)
         {
-            _botuContext.Semestres.AddRange(listSemestres);
-            _botuContext.SaveChanges();
+            foreach (var semestre in listSemestres)
+            {
+                var semestresExistente = _botuContext.Semestres
+                    .Include(x => x.Disciplinas)
+                        .ThenInclude(x => x.Avaliacoes)
+                    .FirstOrDefault(x => x.Nome == semestre.Nome);
+
+                if (semestresExistente != null)
+                {
+                    // Atualizar as disciplinas existentes com base nas disciplinas do semestre fornecido
+                    foreach (var disciplina in semestre.Disciplinas)
+                    {
+                        var disciplinaExistente = semestresExistente.Disciplinas.FirstOrDefault(d => d.Id == disciplina.Id);
+                        if (disciplinaExistente != null)
+                        {
+                            // Atualizar as propriedades da disciplina existente
+                            disciplinaExistente.Nome = disciplina.Nome;
+                            disciplinaExistente.Professor = disciplina.Professor;
+                            disciplinaExistente.Frequencia = disciplina.Frequencia;
+                            disciplinaExistente.Faltas = disciplina.Faltas;
+                            disciplinaExistente.Aulas = disciplina.Aulas;
+                            disciplinaExistente.Media = disciplina.Media;
+
+                            // Atualizar as avaliações existentes
+                            foreach (var avaliacao in disciplina.Avaliacoes)
+                            {
+                                var avaliacaoExistente = disciplinaExistente.Avaliacoes.FirstOrDefault(a => a.Id == avaliacao.Id);
+                                if (avaliacaoExistente != null)
+                                {
+                                    // Atualizar as propriedades da avaliação existente
+                                    avaliacaoExistente.Nome = avaliacao.Nome;
+                                    avaliacaoExistente.DataEntrega = avaliacao.DataEntrega;
+                                    avaliacaoExistente.Conteudo = avaliacao.Conteudo;
+                                    avaliacaoExistente.Nota = avaliacao.Nota;
+                                    avaliacaoExistente.TipoTarefa = avaliacao.TipoTarefa;
+                                }
+                                else
+                                {
+                                    // Adicionar uma nova avaliação
+                                    disciplinaExistente.Avaliacoes.Add(avaliacao);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // Adicionar uma nova disciplina
+                            semestresExistente.Disciplinas.Add(disciplina);
+                        }
+                    }
+
+                    semestresExistente.DataInicio = DateTime.Now;
+                    _botuContext.Semestres.Update(semestresExistente); // Marcar o semestre existente como modificado
+                }
+                else
+                {
+                    semestre.DataFinal = DateTime.Now;
+                    _botuContext.Semestres.AddAsync(semestre); // Adicionar um novo semestre
+                }
+            }
+
+            _botuContext.SaveChanges(); // Salvar as alterações no contexto
         }
+
 
         private List<Dictionary<string, string>> CapturarInformacoesSemestresDropdown()
         {
@@ -204,6 +264,7 @@ namespace Infra.Hangfire.Jobs
                 semestre.Nome = info["Label"];
                 semestre.AlunoId = _alunoId;
                 semestre.Disciplinas = new List<Disciplina>();
+                semestre.CursoId = _integracao.Faculdade.Cursos.FirstOrDefault(x => x.IsCursando == true).Id;
 
                 listSemestre.Add(semestre);
             }
@@ -297,7 +358,7 @@ namespace Infra.Hangfire.Jobs
 
         private void NavegarTelaNotasFaltas()
         {
-            Thread.Sleep(500);
+            Thread.Sleep(1500);
             var linkElement = _driver.FindElement(By.XPath("//div[@class='ds-painelDeLinks' and @title='Notas e faltas']/a"));
             linkElement.Click();
 

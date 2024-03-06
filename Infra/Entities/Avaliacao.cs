@@ -9,5 +9,9 @@ namespace ApiTcc.Infra.DB.Entities
         public string Conteudo { get; set; }
         public decimal Nota { get; set; }
         public EnumTipoAvaliacao TipoTarefa { get; set; }
+        public Guid DisciplinaId { get; set; }
+        public Disciplina Disciplina { get; set; }
+
+
     }
 }

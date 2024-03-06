@@ -37,7 +37,7 @@ namespace Application.Integracoes.Command
             
             var faculdade = _botuContext.Faculdades.First(x => x.Id == AdicionarIntegracaoCommand.FaculdadeId);
 
-            var integracao = aluno.Integracoes.First(x => x.TipoIntegracao == _command.TipoIntegracao);
+            var integracao = aluno.Integracoes.FirstOrDefault(x => x.TipoIntegracao == _command.TipoIntegracao);
 
             if (integracao != null)
                 UpdateIntegracao(integracao);
