@@ -84,15 +84,17 @@ namespace Infra.Hangfire.Jobs
                         if (infoMedia[i]["IsLabel"] == "False")
                         {
                             _driver.ExecuteScript($"$('a[title*=\\\"Clique aqui para visualizar as avaliações parciais que compõem esta nota.\\\"]')[{i}].click()");
-                            Thread.Sleep(500);
+                            Thread.Sleep(1000);
                             var informacoesAvaliacoes = CapturarInformacoesAvaliacoes();
 
                             List<Avaliacao> avaliacoes = TransferirInformacoesParaAvaliacoes(informacoesAvaliacoes);
                             semestre.Disciplinas[i].Avaliacoes = semestre.Disciplinas[i].Avaliacoes == null ? new List<Avaliacao>() : semestre.Disciplinas[i].Avaliacoes;
                             semestre.Disciplinas[i].Avaliacoes.AddRange(avaliacoes);
 
-                            _driver.Navigate().Back();
-                            Thread.Sleep(500);
+                            //_driver.Navigate().Back();
+                            _driver.Navigate().GoToUrl("https://siga.udesc.br/sigaMentorWebG5/jsf/dashboard.xhtml");
+                            NavegarTelaNotasFaltas();
+                            Thread.Sleep(1000);
                             IrParaSemestre(semestre);
                             SelecionarNotaParcial();
                             Thread.Sleep(500);
@@ -134,65 +136,24 @@ namespace Infra.Hangfire.Jobs
             {
                 var semestresExistente = _botuContext.Semestres
                     .Include(x => x.Disciplinas)
-                        .ThenInclude(x => x.Avaliacoes)
+                    .ThenInclude(x => x.Avaliacoes)
                     .FirstOrDefault(x => x.Nome == semestre.Nome);
 
                 if (semestresExistente != null)
                 {
-                    // Atualizar as disciplinas existentes com base nas disciplinas do semestre fornecido
-                    foreach (var disciplina in semestre.Disciplinas)
-                    {
-                        var disciplinaExistente = semestresExistente.Disciplinas.FirstOrDefault(d => d.Id == disciplina.Id);
-                        if (disciplinaExistente != null)
-                        {
-                            // Atualizar as propriedades da disciplina existente
-                            disciplinaExistente.Nome = disciplina.Nome;
-                            disciplinaExistente.Professor = disciplina.Professor;
-                            disciplinaExistente.Frequencia = disciplina.Frequencia;
-                            disciplinaExistente.Faltas = disciplina.Faltas;
-                            disciplinaExistente.Aulas = disciplina.Aulas;
-                            disciplinaExistente.Media = disciplina.Media;
-
-                            // Atualizar as avaliações existentes
-                            foreach (var avaliacao in disciplina.Avaliacoes)
-                            {
-                                var avaliacaoExistente = disciplinaExistente.Avaliacoes.FirstOrDefault(a => a.Id == avaliacao.Id);
-                                if (avaliacaoExistente != null)
-                                {
-                                    // Atualizar as propriedades da avaliação existente
-                                    avaliacaoExistente.Nome = avaliacao.Nome;
-                                    avaliacaoExistente.DataEntrega = avaliacao.DataEntrega;
-                                    avaliacaoExistente.Conteudo = avaliacao.Conteudo;
-                                    avaliacaoExistente.Nota = avaliacao.Nota;
-                                    avaliacaoExistente.TipoTarefa = avaliacao.TipoTarefa;
-                                }
-                                else
-                                {
-                                    // Adicionar uma nova avaliação
-                                    disciplinaExistente.Avaliacoes.Add(avaliacao);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // Adicionar uma nova disciplina
-                            semestresExistente.Disciplinas.Add(disciplina);
-                        }
-                    }
-
-                    semestresExistente.DataInicio = DateTime.Now;
-                    _botuContext.Semestres.Update(semestresExistente); // Marcar o semestre existente como modificado
+                    _botuContext.Semestres.Remove(semestresExistente);
+                    semestre.DataFinal = DateTime.Now;
+                    _botuContext.Semestres.AddAsync(semestre);
                 }
                 else
                 {
                     semestre.DataFinal = DateTime.Now;
-                    _botuContext.Semestres.AddAsync(semestre); // Adicionar um novo semestre
+                    _botuContext.Semestres.AddAsync(semestre);
                 }
             }
 
-            _botuContext.SaveChanges(); // Salvar as alterações no contexto
+            _botuContext.SaveChanges();
         }
-
 
         private List<Dictionary<string, string>> CapturarInformacoesSemestresDropdown()
         {
@@ -227,12 +188,6 @@ namespace Infra.Hangfire.Jobs
                 Console.WriteLine("Dropdown não está visível após o clique.");
                 return new List<Dictionary<string, string>>();
             }
-        }
-
-        private void AdicionarDisciplinaDb(List<Disciplina> listDisciplinas)
-        {
-            _botuContext.Disciplinas.AddRange(listDisciplinas);
-            _botuContext.SaveChanges();
         }
 
         private List<Disciplina> TransferirInformacoesParaDisciplinas(List<Dictionary<string, string>> informacoes)
@@ -358,10 +313,10 @@ namespace Infra.Hangfire.Jobs
 
         private void NavegarTelaNotasFaltas()
         {
-            Thread.Sleep(1500);
+            Thread.Sleep(2000);
             var linkElement = _driver.FindElement(By.XPath("//div[@class='ds-painelDeLinks' and @title='Notas e faltas']/a"));
+            Thread.Sleep(500);
             linkElement.Click();
-
             Thread.Sleep(500);
         }
 
@@ -381,8 +336,7 @@ namespace Infra.Hangfire.Jobs
 
         private void EsticarDropdown(int indice)
         {
-            Thread.Sleep(500);
-
+            Thread.Sleep(1000);
             // Localizar todos os elementos com a classe iconeCampo.fa.fa-caret-square-o-down
             var elementosDropdown = _driver.FindElements(By.CssSelector("i.iconeCampo.fa.fa-caret-square-o-down"));
 
@@ -392,14 +346,38 @@ namespace Infra.Hangfire.Jobs
                 // Selecionar o primeiro elemento encontrado (ou o que for adequado)
                 var iconeDropdown = elementosDropdown[indice];
 
+                Thread.Sleep(2000);
                 // Clicar no ícone para esticar o dropdown
                 iconeDropdown.Click();
-                Thread.Sleep(500);
+                Thread.Sleep(1000);
             }
             else
             {
                 // Caso nenhum elemento seja encontrado, você pode lidar com isso de acordo com a lógica do seu programa
                 Console.WriteLine("Nenhum elemento iconeCampo.fa.fa-caret-square-o-down encontrado.");
+            }
+        }
+        
+        private void EsticarDropdownJS(int indice)
+        {
+            Thread.Sleep(500);
+            // Localizar todos os elementos com a classe iconeCampo.fa.fa-caret-square-o-down
+            var elementosDropdown = _driver.ExecuteScript("$('i[class*=\\\"iconeCampo fa fa - caret - square - o - down\\\"]')");
+
+            // Verificar se foram encontrados elementos
+            if (indice == 0)
+            {
+                _driver.ExecuteScript("$('#formPrincipal\\\\:input_filtro_aca_periodo_letivo_idd')[0].click();");
+            }
+
+            if (indice == 1)
+            {
+                _driver.ExecuteScript("$(\\\"#formPrincipal\\:input_filtro_aca_periodo_letivo_idd\\\").click();");
+            }
+
+            if (indice == 2)
+            {
+                _driver.ExecuteScript("$(\\\"#formPrincipal\\:input_filtro_aca_periodo_letivo_idd\\\").click();");
             }
         }
     }
