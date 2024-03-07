@@ -202,14 +202,32 @@ namespace Infra.Hangfire.Jobs
                 var arrayFaltaAula = info["Faltas"].Split('/');
                 disciplina.Faltas = int.TryParse(arrayFaltaAula[0], out int faltasOut) ? faltasOut : 0;
                 disciplina.Aulas = int.TryParse(arrayFaltaAula[1], out int aulasOut) ? aulasOut : 0;
-                disciplina.Professor = "Nao atribuido";
+                disciplina.Professor = "Não atribuido";
+                disciplina.Resultado = "Não atribuído";
+                disciplina.Frequencia = CalcularFrequencia(disciplina.Faltas, disciplina.Aulas);
 
                 listDisciplinas.Add(disciplina);
             }
 
             return listDisciplinas;
         }
-        
+
+        public static double CalcularFrequencia(int faltas, int totalAulas)
+        {
+            if (totalAulas == 0)
+            {
+                return 0;
+            }
+            else if (faltas == 0)
+            {
+                return 100;
+            }
+            else
+            {
+                return (1 - (double)faltas / totalAulas) * 100;
+            }
+        }
+
         private List<Semestre> TransferirInformacoesParaSemestres(List<Dictionary<string, string>> informacoes)
         {
             var listSemestre = new List<Semestre>();
