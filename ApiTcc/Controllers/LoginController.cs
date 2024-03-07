@@ -3,6 +3,7 @@ using ApiTcc.Responses;
 using Application.Integracoes.Command;
 using Application.Interfaces;
 using Application.Login.Command;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -17,6 +18,7 @@ namespace ApiTcc.Controllers
         {
         }
         
+        [AllowAnonymous]
         [HttpPost("Cadastro")]
         public async Task<IActionResult> Cadastro(
             [FromBody] AdicionarLoginCommand AdicionarLoginCommand,  
@@ -34,6 +36,7 @@ namespace ApiTcc.Controllers
 
         }
 
+        [AllowAnonymous]
         [HttpPost("Login")]
         public async Task<IActionResult> Login(
             [FromBody] GetUserCommand getUserCommand,  
