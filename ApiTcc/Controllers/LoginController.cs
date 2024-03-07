@@ -19,13 +19,13 @@ namespace ApiTcc.Controllers
         
         [HttpPost()]
         [ActionName("Post")]
-        public IActionResult Post(
+        public async Task<IActionResult> Post(
             [FromBody] AdicionarLoginCommand AdicionarLoginCommand,  
             [FromServices] IAdicionarLoginCommandHandler handler)
         {
             try
             {
-                handler.Handle(AdicionarLoginCommand);
+                await handler.Handle(AdicionarLoginCommand);
                 return StatusCode(200, new { statusCode = HttpStatusCode.Created });
             }
             catch (Exception e)
@@ -37,13 +37,13 @@ namespace ApiTcc.Controllers
         
         [HttpGet()]
         [ActionName("Get")]
-        public IActionResult Get(
+        public async Task<IActionResult> Get(
             [FromQuery] GetUserCommand getUserCommand,  
             [FromServices] IGetUserCommandHandler queryHandler)
         {
             try
             {
-                var jwt = queryHandler.Handle(getUserCommand);
+                var jwt = await queryHandler.Handle(getUserCommand);
                 return Ok(jwt);
             }
             catch (Exception e)
