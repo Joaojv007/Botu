@@ -1,6 +1,5 @@
 ﻿using ApiTcc.Negocio.Enums;
 using Application.Integracoes.Command;
-using Application.Login.Command;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace Application.Interfaces
 {
-    public interface IGetUserCommandHandler
+    public interface IAdicionarIntegracaoCommandHandler
     {
-        Task<string> Handle(GetUserCommand command);
+        void Handle(AdicionarIntegracaoCommand AdicionarIntegracaoCommand);
     }
 }

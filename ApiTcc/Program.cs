@@ -5,9 +5,16 @@ using Application.Interfaces;
 using Infra;
 using Microsoft.EntityFrameworkCore;
 using Hangfire;
-using Hangfire.SqlServer;
 using Hangfire.MySql;
 using Application.Alunos.Queries;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Infra.Criptografia;
+using Application.Login.Command;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +44,8 @@ builder.Services.AddScoped<IBuscarAlunoQueryHandler, BuscarAlunoQueryHandler>();
 builder.Services.AddScoped<IBuscarDisciplinasQueryHandler, BuscarDisciplinasQueryHandler>();
 builder.Services.AddScoped<IBuscarSemestresQueryHandler, BuscarSemestresQueryHandler>();
 builder.Services.AddScoped<IBuscarCursosQueryHandler, BuscarCursosQueryHandler>();
+builder.Services.AddScoped<IAdicionarLoginCommandHandler, AdicionarLoginCommandHandler>();
+builder.Services.AddScoped<IGetUserCommandHandler, GetUserCommandHandler>();
 
 builder.Services.AddHangfire(configuration => configuration
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
@@ -60,6 +69,37 @@ builder.Services.AddHangfire(configuration => configuration
 
 builder.Services.AddHangfireServer();
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    };
+});
+
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+
+builder.Services.AddMvc(config =>
+{
+    var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+    config.Filters.Add(new AuthorizeFilter(policy));
+}).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+//builder.Services.AddControllersWithViews(options =>
+//{
+//    options.Filters.Add<GlobalSampleActionFilter>();
+//});
+
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -77,6 +117,7 @@ app.UseHttpsRedirection();
 
 app.UseHanfire();
 app.MapHangfireDashboard();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
