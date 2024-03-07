@@ -17,9 +17,8 @@ namespace ApiTcc.Controllers
         {
         }
         
-        [HttpPost()]
-        [ActionName("Post")]
-        public async Task<IActionResult> Post(
+        [HttpPost("Cadastro")]
+        public async Task<IActionResult> Cadastro(
             [FromBody] AdicionarLoginCommand AdicionarLoginCommand,  
             [FromServices] IAdicionarLoginCommandHandler handler)
         {
@@ -34,11 +33,10 @@ namespace ApiTcc.Controllers
             }
 
         }
-        
-        [HttpGet()]
-        [ActionName("Get")]
-        public async Task<IActionResult> Get(
-            [FromQuery] GetUserCommand getUserCommand,  
+
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login(
+            [FromBody] GetUserCommand getUserCommand,  
             [FromServices] IGetUserCommandHandler queryHandler)
         {
             try
