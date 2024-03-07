@@ -1,4 +1,5 @@
 ﻿using ApiTcc.Infra.DB.Entities;
+using Infra.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,7 @@ namespace Infra
         DbSet<Disciplina> Disciplinas { get; set; }
         DbSet<Avaliacao> Avaliacoes { get; set; }
         DbSet<Integracao> Integracoes { get; set; }
+        DbSet<User> Users { get; set; }
         DbSet<FaculdadeAluno> FaculdadeAluno { get; set; }
         int SaveChanges();
     }

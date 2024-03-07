@@ -1,5 +1,6 @@
 ﻿using ApiTcc.Infra.DB.Entities;
 using Infra;
+using Infra.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApiTcc.Infra.DB
@@ -17,7 +18,7 @@ namespace ApiTcc.Infra.DB
         public DbSet<Integracao> Integracoes { get; set; }
         public DbSet<FaculdadeAluno> FaculdadeAluno { get; set; }
         public DbSet<CursoAluno> CursoAluno { get; set; }
-        //public DbSet<Comunidade> Comunidade { get; set; }
+        public DbSet<User> Users { get; set; }
 
         public int SaveChanges() => base.SaveChanges();
 

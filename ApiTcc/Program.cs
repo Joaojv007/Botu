@@ -5,9 +5,13 @@ using Application.Interfaces;
 using Infra;
 using Microsoft.EntityFrameworkCore;
 using Hangfire;
-using Hangfire.SqlServer;
 using Hangfire.MySql;
 using Application.Alunos.Queries;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Infra.Criptografia;
+using Application.Login.Command;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +41,8 @@ builder.Services.AddScoped<IBuscarAlunoQueryHandler, BuscarAlunoQueryHandler>();
 builder.Services.AddScoped<IBuscarDisciplinasQueryHandler, BuscarDisciplinasQueryHandler>();
 builder.Services.AddScoped<IBuscarSemestresQueryHandler, BuscarSemestresQueryHandler>();
 builder.Services.AddScoped<IBuscarCursosQueryHandler, BuscarCursosQueryHandler>();
+builder.Services.AddScoped<IAdicionarLoginCommandHandler, AdicionarLoginCommandHandler>();
+builder.Services.AddScoped<IGetUserCommandHandler, GetUserCommandHandler>();
 
 builder.Services.AddHangfire(configuration => configuration
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
@@ -59,6 +65,21 @@ builder.Services.AddHangfire(configuration => configuration
     ));
 
 builder.Services.AddHangfireServer();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtKey"])),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+    });
+
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+
 
 var app = builder.Build();
 
