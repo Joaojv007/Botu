@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using ApiTcc.Infra.DB.Entities;
+using Infra.Email;
 using Microsoft.EntityFrameworkCore;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -15,11 +16,13 @@ namespace Infra.Hangfire.Jobs
         private readonly string _url;
         private readonly ChromeDriver _driver;
         private readonly IBotuContext _botuContext;
+        private readonly IEmailService _emailService;
         private Guid _alunoId;
         private Integracao _integracao;
 
-        public SigaNotasJob(IBotuContext botuContext)
+        public SigaNotasJob(IBotuContext botuContext, IEmailService emailService)
         {
+            _emailService = emailService;
             _botuContext = botuContext;
             _options = new ChromeOptions();
             //_options.AddArgument("--headless");
@@ -47,6 +50,7 @@ namespace Infra.Hangfire.Jobs
                         ExecutarIntegracao(integracao);
                     }
 
+                    await _emailService.SendEmailAsync("victor.flop@gmail.com", "Testeeeee", "DO JAOOO");
                     return new GenericCommandResult(true, "Dados coletados com sucesso", "");
                 }
             }
