@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using ApiTcc.Infra.DB.Entities;
+using Hangfire;
 using Infra.Email;
 using Microsoft.EntityFrameworkCore;
 using OpenQA.Selenium;
@@ -16,13 +17,11 @@ namespace Infra.Hangfire.Jobs
         private readonly string _url;
         private readonly ChromeDriver _driver;
         private readonly IBotuContext _botuContext;
-        private readonly IEmailService _emailService;
         private Guid _alunoId;
         private Integracao _integracao;
 
-        public SigaNotasJob(IBotuContext botuContext, IEmailService emailService)
+        public SigaNotasJob(IBotuContext botuContext)
         {
-            _emailService = emailService;
             _botuContext = botuContext;
             _options = new ChromeOptions();
             //_options.AddArgument("--headless");
@@ -45,12 +44,17 @@ namespace Infra.Hangfire.Jobs
 
                     foreach (var integracao in integracoesPendentesSiga)
                     {
-                        _alunoId = integracao.Aluno.Id;
+                        var aluno = integracao.Aluno;
+                        _alunoId = aluno.Id;
                         _integracao = integracao;
                         ExecutarIntegracao(integracao);
+
+                        if (_integracao.CapturouSemestresPassados == false)
+                        {
+                            BackgroundJob.Enqueue<EmailJob>(job => job.SendEmailAsync(aluno.Email, "Integração feita com sucesso!", "<!DOCTYPE html> <html> <head>     <style>         body {             font-family: Arial, sans-serif;             margin: 20px;             padding: 0;             background-color: #f4f4f4;             color: #333;         }         .container {             background-color: #fff;             padding: 20px;             border-radius: 5px;             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);         }         .header {             font-size: 24px;             margin-bottom: 20px;         }         .content {             font-size: 16px;             line-height: 1.6;         }         .footer {             margin-top: 20px;             font-size: 12px;             text-align: center;             color: #aaa;         }     </style> </head> <body>     <div class=\\\"container\\\" >         <div class=\\\"header\\\" > Integração Concluída com Sucesso</div>         <div class=\\\"content\\\" >             <p>Olá,</p>             <p>Estamos felizes em informar que a integração foi concluída com sucesso. Todos os dados necessários foram processados e estão agora atualizados em nosso sistema.</p>             <p>Se você tiver alguma dúvida ou precisar de assistência adicional, por favor, não hesite em entrar em contato conosco.</p>             <p>Atenciosamente,</p>             <p>Equipe Botu</p>         </div>         <div class=\\\"footer\\\">             Este é um e-mail automático, por favor, não responda.         </div>     </div> </body> </html>"));
+                        }
                     }
 
-                    await _emailService.SendEmailAsync("victor.flop@gmail.com", "Testeeeee", "DO JAOOO");
                     return new GenericCommandResult(true, "Dados coletados com sucesso", "");
                 }
             }
@@ -161,7 +165,6 @@ namespace Infra.Hangfire.Jobs
 
         private List<Dictionary<string, string>> CapturarInformacoesSemestresDropdown()
         {
-            // Clicar no ícone para abrir o dropdown
             EsticarDropdown(0);
 
             // Encontrar o painel do dropdown agora que ele está visível

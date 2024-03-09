@@ -22,7 +22,6 @@ namespace Infra.Email
             _smtpClient = new SmtpClient("smtp.office365.com")
             {
                 Port = 587,
-                //Credentials = new NetworkCredential("12446363989@edu.udesc.br", "Jv5626$$"), //trocarEmail, fazer um outlook só pra isso
                 Credentials = new NetworkCredential("botuoficial@outlook.com", "Botuehgolfinho"), //trocarEmail, fazer um outlook só pra isso
                 EnableSsl = true
             };
@@ -41,7 +40,6 @@ namespace Infra.Email
             }
             catch (Exception ex)
             {
-                // Handle exception
                 Console.WriteLine(ex.Message);
                 throw;
             }
