@@ -2,6 +2,11 @@
 {
     public class Disciplina : EntityBase
     {
+        public Disciplina()
+        {
+            Avaliacoes = new List<Avaliacao>();
+        }
+
         public string Nome { get; set; }
         public string Professor { get; set; }
         public double Frequencia { get; set; }

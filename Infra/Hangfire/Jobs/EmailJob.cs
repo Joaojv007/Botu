@@ -18,7 +18,14 @@ namespace Infra.Hangfire.Jobs
 
         public async Task SendEmailAsync(string to, string subject, string body)
         {
-            await _emailService.SendEmailAsync(to, subject, body);
+            try
+            {
+                await _emailService.SendEmailAsync(to, subject, body);
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
         }
     }
 

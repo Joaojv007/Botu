@@ -18,6 +18,7 @@ namespace Infra.Hangfire.Jobs
         private readonly ChromeDriver _driver;
         private readonly IBotuContext _botuContext;
         private Guid _alunoId;
+        private Aluno _aluno;
         private Integracao _integracao;
 
         public SigaNotasJob(IBotuContext botuContext)
@@ -35,23 +36,24 @@ namespace Infra.Hangfire.Jobs
             {
                 using (_driver)
                 {
-                    var integracoesPendentesSiga = _botuContext.Integracoes
+                    var integracoesPendentesSiga = await _botuContext.Integracoes
                         .Include(x => x.Aluno)
                         .Include(x => x.Faculdade)
                         .ThenInclude(x => x.Cursos)
                         .Where(x => x.TipoIntegracao == ApiTcc.Negocio.Enums.EnumTipoIntegracao.Siga)
-                        .ToList();
+                        .ToListAsync();
 
                     foreach (var integracao in integracoesPendentesSiga)
                     {
-                        var aluno = integracao.Aluno;
-                        _alunoId = aluno.Id;
+                        _aluno = integracao.Aluno;
+                        _alunoId = _aluno.Id;   
                         _integracao = integracao;
-                        ExecutarIntegracao(integracao);
+                        var capturouSemestresPassados = _integracao.CapturouSemestresPassados;
+                        await ExecutarIntegracao(integracao);
 
-                        if (_integracao.CapturouSemestresPassados == false)
+                        if (!capturouSemestresPassados)
                         {
-                            BackgroundJob.Enqueue<EmailJob>(job => job.SendEmailAsync(aluno.Email, "Integração feita com sucesso!", "<!DOCTYPE html> <html> <head>     <style>         body {             font-family: Arial, sans-serif;             margin: 20px;             padding: 0;             background-color: #f4f4f4;             color: #333;         }         .container {             background-color: #fff;             padding: 20px;             border-radius: 5px;             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);         }         .header {             font-size: 24px;             margin-bottom: 20px;         }         .content {             font-size: 16px;             line-height: 1.6;         }         .footer {             margin-top: 20px;             font-size: 12px;             text-align: center;             color: #aaa;         }     </style> </head> <body>     <div class=\\\"container\\\" >         <div class=\\\"header\\\" > Integração Concluída com Sucesso</div>         <div class=\\\"content\\\" >             <p>Olá,</p>             <p>Estamos felizes em informar que a integração foi concluída com sucesso. Todos os dados necessários foram processados e estão agora atualizados em nosso sistema.</p>             <p>Se você tiver alguma dúvida ou precisar de assistência adicional, por favor, não hesite em entrar em contato conosco.</p>             <p>Atenciosamente,</p>             <p>Equipe Botu</p>         </div>         <div class=\\\"footer\\\">             Este é um e-mail automático, por favor, não responda.         </div>     </div> </body> </html>"));
+                            BackgroundJob.Enqueue<EmailJob>(job => job.SendEmailAsync(_aluno.Email, "Integração feita com sucesso!", "<!DOCTYPE html> <html> <head>     <style>         body {             font-family: Arial, sans-serif;             margin: 20px;             padding: 0;             background-color: #f4f4f4;             color: #333;         }         .container {             background-color: #fff;             padding: 20px;             border-radius: 5px;             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);         }         .header {             font-size: 24px;             margin-bottom: 20px;         }         .content {             font-size: 16px;             line-height: 1.6;         }         .footer {             margin-top: 20px;             font-size: 12px;             text-align: center;             color: #aaa;         }     </style> </head> <body>     <div class=\\\"container\\\" >         <div class=\\\"header\\\" > Integração Concluída com Sucesso</div>         <div class=\\\"content\\\" >             <p>Olá,</p>             <p>Estamos felizes em informar que a integração foi concluída com sucesso. Todos os dados necessários foram processados e estão agora atualizados em nosso sistema.</p>             <p>Se você tiver alguma dúvida ou precisar de assistência adicional, por favor, não hesite em entrar em contato conosco.</p>             <p>Atenciosamente,</p>             <p>Equipe Botu</p>         </div>         <div class=\\\"footer\\\">             Este é um e-mail automático, por favor, não responda.         </div>     </div> </body> </html>"));
                         }
                     }
 
@@ -64,7 +66,7 @@ namespace Infra.Hangfire.Jobs
             }
         }
 
-        private void ExecutarIntegracao(Integracao integracao)
+        private async Task ExecutarIntegracao(Integracao integracao)
         {
             if (integracao != null)
             {
@@ -79,6 +81,9 @@ namespace Infra.Hangfire.Jobs
 
                 if (integracao.CapturouSemestresPassados)
                     listSemestres.RemoveRange(1, listSemestres.Count - 1);
+
+                //teste
+                //listSemestres.RemoveRange(2, listSemestres.Count - 2);
 
                 foreach (var semestre in listSemestres)
                 {
@@ -99,7 +104,6 @@ namespace Infra.Hangfire.Jobs
                             semestre.Disciplinas[i].Avaliacoes = semestre.Disciplinas[i].Avaliacoes == null ? new List<Avaliacao>() : semestre.Disciplinas[i].Avaliacoes;
                             semestre.Disciplinas[i].Avaliacoes.AddRange(avaliacoes);
 
-                            //_driver.Navigate().Back();
                             _driver.Navigate().GoToUrl("https://siga.udesc.br/sigaMentorWebG5/jsf/dashboard.xhtml");
                             NavegarTelaNotasFaltas();
                             Thread.Sleep(1000);
@@ -110,8 +114,7 @@ namespace Infra.Hangfire.Jobs
                     }
                 }
 
-                integracao.CapturouSemestresPassados = true;
-                AdicionarSemestreDb(listSemestres);
+                await AdicionarSemestreDb(listSemestres);
             }
 
         }
@@ -138,29 +141,68 @@ namespace Infra.Hangfire.Jobs
             return listAva;
         }
 
-        private void AdicionarSemestreDb(List<Semestre> listSemestres)
+        private async Task AdicionarSemestreDb(List<Semestre> listSemestres)
         {
             foreach (var semestre in listSemestres)
             {
-                var semestresExistente = _botuContext.Semestres
+                var semestreExistente = await _botuContext.Semestres
                     .Include(x => x.Disciplinas)
                     .ThenInclude(x => x.Avaliacoes)
-                    .FirstOrDefault(x => x.Nome == semestre.Nome);
+                    .FirstOrDefaultAsync(x => x.Nome == semestre.Nome);
 
-                if (semestresExistente != null)
+                if (semestreExistente != null)
                 {
-                    _botuContext.Semestres.Remove(semestresExistente);
-                    semestre.DataFinal = DateTime.Now;
-                    _botuContext.Semestres.AddAsync(semestre);
+                    if (_integracao.CapturouSemestresPassados)
+                        await EnviarEmailAtualizacoesSemestre(semestreExistente, semestre);
+                      
+                    _botuContext.Semestres.Remove(semestreExistente);
                 }
-                else
-                {
-                    semestre.DataFinal = DateTime.Now;
-                    _botuContext.Semestres.AddAsync(semestre);
-                }
+                semestre.DataFinal = DateTime.Now;
+                await _botuContext.Semestres.AddAsync(semestre);
             }
 
-            _botuContext.SaveChanges();
+            _integracao.CapturouSemestresPassados = true;
+            await _botuContext.SaveChangesAsync();
+        }
+
+        private async Task EnviarEmailAtualizacoesSemestre(Semestre semestreExistente, Semestre semestreNovo)
+        {
+            if (semestreExistente.Disciplinas != null)
+            {
+                foreach (var disciplinaExistente in semestreExistente.Disciplinas)
+                {
+                    var disciplinaNova = semestreNovo.Disciplinas
+                        .FirstOrDefault(d => d.Nome == disciplinaExistente.Nome);
+
+                    if (disciplinaNova != null)
+                    {
+                        if (disciplinaExistente.Resultado != disciplinaNova.Resultado)
+                        {
+                            var titulo = $"BotU Atualização Status {disciplinaNova.Nome} !";
+                            var body = "<!DOCTYPE html> <html> <head>     <style>         body {             font - family: Arial, sans-serif;             margin: 20px;             padding: 0;             background-color: #f4f4f4;             color: #333;         }         .container {             background - color: #fff;             padding: 20px;             border-radius: 5px;             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);         }         .header {             font - size: 24px;             margin-bottom: 20px;         }         .content {             font - size: 16px;             line-height: 1.6;         }         .footer {             margin - top: 20px;             font-size: 12px;             text-align: center;             color: #aaa;         }     </style> </head> <body>     <div class=\\\"container\\\" >   <div class=\\\"content\\\" >             <p>Status disciplina " + disciplinaNova.Nome + "</p>      <p>Você está <strong>" + disciplinaNova.Resultado + "</strong>.</p>             <p>Se você tiver alguma dúvida ou precisar de assistência adicional, por favor, não hesite em entrar em contato conosco.</p>             <p>Atenciosamente,</p>             <p>Equipe Botu</p>         </div>         <div class=\\\"footer\\\">             Este é um e-mail automático, por favor, não responda.         </div>     </div> </body> </html>";
+                            BackgroundJob.Enqueue<EmailJob>(job => job.SendEmailAsync(_aluno.Email, titulo, body));
+                        }
+
+                        VerificarAtualizacoesAvaliacoes(disciplinaExistente, disciplinaNova);
+                    }
+                }
+            }
+        }
+
+        private void VerificarAtualizacoesAvaliacoes(Disciplina discilplinaExistentes, Disciplina disciplinaoNova)
+        {
+            foreach (var avaliacaoNova in disciplinaoNova.Avaliacoes)
+            {
+                var avaliacaoExiste = discilplinaExistentes.Avaliacoes
+                .FirstOrDefault(d => d.Nome == avaliacaoNova.Nome);
+
+                if (avaliacaoExiste == null)
+                {
+                    var titulo = $"BotU Adição Nota {disciplinaoNova.Nome} !";
+                    var body = "<!DOCTYPE html> <html> <head>     <style>         body {             font - family: Arial, sans-serif;             margin: 20px;             padding: 0;             background-color: #f4f4f4;             color: #333;         }         .container {             background - color: #fff;             padding: 20px;             border-radius: 5px;             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);         }         .header {             font - size: 24px;             margin-bottom: 20px;         }         .content {             font - size: 16px;             line-height: 1.6;         }         .footer {             margin - top: 20px;             font-size: 12px;             text-align: center;             color: #aaa;         }     </style> </head> <body>     <div class=\\\"container\\\" >   <div class=\\\"content\\\" >             <p>Nota adicionada, Avaliação:" + avaliacaoNova.Nome + "</p>      <p>Nota: <strong>" + avaliacaoNova.Nota + "</strong>.</p>             <p>Se você tiver alguma dúvida ou precisar de assistência adicional, por favor, não hesite em entrar em contato conosco.</p>             <p>Atenciosamente,</p>             <p>Equipe Botu</p>         </div>         <div class=\\\"footer\\\">             Este é um e-mail automático, por favor, não responda.         </div>     </div> </body> </html>";
+                    BackgroundJob.Enqueue<EmailJob>(job => job.SendEmailAsync(_aluno.Email, titulo, body));
+                }
+            }
         }
 
         private List<Dictionary<string, string>> CapturarInformacoesSemestresDropdown()
@@ -244,7 +286,7 @@ namespace Infra.Hangfire.Jobs
                 semestre.Nome = info["Label"];
                 semestre.AlunoId = _alunoId;
                 semestre.Disciplinas = new List<Disciplina>();
-                semestre.CursoId = _integracao.Faculdade.Cursos.FirstOrDefault(x => x.IsCursando == true).Id;
+                semestre.CursoId = _integracao.Faculdade.Cursos.First(x => x.IsCursando == true).Id;
 
                 listSemestre.Add(semestre);
             }
