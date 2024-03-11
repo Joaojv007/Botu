@@ -52,5 +52,36 @@ namespace ApiTcc.Controllers
                 return StatusCode(500, HttpStatusCode.InternalServerError);
             }
         }
+
+        [AllowAnonymous]
+        [HttpPost("RecuperarSenha")]
+        public async Task<IActionResult> RecuperarSenha([FromBody] string email,
+            [FromServices] IRecuperarSenhaCommandHandler queryHandler)
+        {
+            try
+            {
+                await queryHandler.Handle(email);
+                return StatusCode(200, new { message = "Solicitação de recuperação de senha enviada com sucesso." });
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        //[AllowAnonymous]
+        //[HttpPost("RedefinirSenha")]
+        //public async Task<IActionResult> RedefinirSenha([FromBody] RedefinirSenhaCommand command)
+        //{
+        //    try
+        //    {
+        //        await _resetSenhaService.RedefinirSenha(command.Token, command.NovaSenha);
+        //        return StatusCode(200, new { message = "Senha redefinida com sucesso." });
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        return StatusCode(500, HttpStatusCode.InternalServerError);
+        //    }
+        //}
     }
 }

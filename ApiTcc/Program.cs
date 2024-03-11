@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Infra.Email;
+using Infra.Services;
+using Infra.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,6 +50,8 @@ builder.Services.AddScoped<IBuscarCursosQueryHandler, BuscarCursosQueryHandler>(
 builder.Services.AddScoped<IAdicionarLoginCommandHandler, AdicionarLoginCommandHandler>();
 builder.Services.AddScoped<IGetUserCommandHandler, GetUserCommandHandler>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IRecuperarSenhaCommandHandler, RecuperarSenhaCommandHandler>();
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
 builder.Services.AddHangfire(configuration => configuration
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)

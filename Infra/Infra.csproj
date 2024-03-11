@@ -28,6 +28,7 @@
     <PackageReference Include="SendGrid" Version="9.29.2" />
     <PackageReference Include="SendGridSharp.Core" Version="2.0.0" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="7.0.2" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.4.0" />
   </ItemGroup>
 
   <ItemGroup>

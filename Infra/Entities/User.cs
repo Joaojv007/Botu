@@ -11,6 +11,8 @@ namespace Infra.Entities
     {
         public string Username { get; set; }
         public string PasswordHash { get; set; }
-        public Aluno AlunoId { get; set; }
+        public string ResetPasswordToken { get; set; }
+        public DateTime ResetPasswordTokenExpiry { get; set; }
+        public Guid AlunoId { get; set; }
     }
 }
