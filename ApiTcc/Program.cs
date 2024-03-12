@@ -51,6 +51,7 @@ builder.Services.AddScoped<IAdicionarLoginCommandHandler, AdicionarLoginCommandH
 builder.Services.AddScoped<IGetUserCommandHandler, GetUserCommandHandler>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IRecuperarSenhaCommandHandler, RecuperarSenhaCommandHandler>();
+builder.Services.AddScoped<IRedefinirSenhaCommandHandler, RedefinirSenhaCommandHandler>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
 builder.Services.AddHangfire(configuration => configuration
