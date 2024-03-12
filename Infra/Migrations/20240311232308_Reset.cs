@@ -21,6 +21,8 @@ namespace Infra.Migrations
                     Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     Nome = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    Email = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     DataNascimento = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
@@ -44,12 +46,33 @@ namespace Infra.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    Username = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    PasswordHash = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    ResetPasswordToken = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    ResetPasswordTokenExpiry = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    AlunoId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "Cursos",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     Nome = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    IsCursando = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     FaculdadeId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci")
                 },
                 constraints: table =>
@@ -104,6 +127,7 @@ namespace Infra.Migrations
                     ErroDescricao = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Erro = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    CapturouSemestresPassados = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     DataIntegracao = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
@@ -125,15 +149,42 @@ namespace Infra.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "CursoAluno",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    FaculdadeId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    AlunoId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CursoAluno", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CursoAluno_Alunos_AlunoId",
+                        column: x => x.AlunoId,
+                        principalTable: "Alunos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CursoAluno_Cursos_FaculdadeId",
+                        column: x => x.FaculdadeId,
+                        principalTable: "Cursos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "Semestres",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     Nome = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    DataInicio = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    DataFinal = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    CursoId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci")
+                    DataInicio = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    DataFinal = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    AlunoId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    CursoId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci")
                 },
                 constraints: table =>
                 {
@@ -142,7 +193,8 @@ namespace Infra.Migrations
                         name: "FK_Semestres_Cursos_CursoId",
                         column: x => x.CursoId,
                         principalTable: "Cursos",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -155,12 +207,13 @@ namespace Infra.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Professor = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Frequencia = table.Column<int>(type: "int", nullable: false),
+                    Frequencia = table.Column<double>(type: "double", nullable: false),
                     Faltas = table.Column<int>(type: "int", nullable: false),
                     Aulas = table.Column<int>(type: "int", nullable: false),
                     Media = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
-                    Resultado = table.Column<int>(type: "int", nullable: false),
-                    SemestreId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci")
+                    Resultado = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    SemestreId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci")
                 },
                 constraints: table =>
                 {
@@ -169,7 +222,8 @@ namespace Infra.Migrations
                         name: "FK_Disciplinas_Semestres_SemestreId",
                         column: x => x.SemestreId,
                         principalTable: "Semestres",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -185,7 +239,7 @@ namespace Infra.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Nota = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
                     TipoTarefa = table.Column<int>(type: "int", nullable: false),
-                    DisciplinaId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci")
+                    DisciplinaId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci")
                 },
                 constraints: table =>
                 {
@@ -194,7 +248,8 @@ namespace Infra.Migrations
                         name: "FK_Avaliacoes_Disciplinas_DisciplinaId",
                         column: x => x.DisciplinaId,
                         principalTable: "Disciplinas",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -202,6 +257,16 @@ namespace Infra.Migrations
                 name: "IX_Avaliacoes_DisciplinaId",
                 table: "Avaliacoes",
                 column: "DisciplinaId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CursoAluno_AlunoId",
+                table: "CursoAluno",
+                column: "AlunoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CursoAluno_FaculdadeId",
+                table: "CursoAluno",
+                column: "FaculdadeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Cursos_FaculdadeId",
@@ -246,10 +311,16 @@ namespace Infra.Migrations
                 name: "Avaliacoes");
 
             migrationBuilder.DropTable(
+                name: "CursoAluno");
+
+            migrationBuilder.DropTable(
                 name: "FaculdadeAluno");
 
             migrationBuilder.DropTable(
                 name: "Integracoes");
+
+            migrationBuilder.DropTable(
+                name: "Users");
 
             migrationBuilder.DropTable(
                 name: "Disciplinas");

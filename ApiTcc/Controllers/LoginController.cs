@@ -55,12 +55,12 @@ namespace ApiTcc.Controllers
 
         [AllowAnonymous]
         [HttpPost("RecuperarSenha")]
-        public async Task<IActionResult> RecuperarSenha([FromBody] string email,
+        public async Task<IActionResult> RecuperarSenha([FromBody] RecuperarSenhaCommand command,
             [FromServices] IRecuperarSenhaCommandHandler queryHandler)
         {
             try
             {
-                await queryHandler.Handle(email);
+                await queryHandler.Handle(command);
                 return StatusCode(200, new { message = "Solicitação de recuperação de senha enviada com sucesso." });
             }
             catch (Exception e)

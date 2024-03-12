@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infra.Migrations
 {
     [DbContext(typeof(BotuContext))]
-    [Migration("20240306005143_ExclusaoEmCascata")]
-    partial class ExclusaoEmCascata
+    [Migration("20240312010218_Resetpassword4")]
+    partial class Resetpassword4
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -30,6 +30,10 @@ namespace Infra.Migrations
 
                     b.Property<DateTime>("DataNascimento")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Nome")
                         .IsRequired()
@@ -129,8 +133,8 @@ namespace Infra.Migrations
                     b.Property<int>("Faltas")
                         .HasColumnType("int");
 
-                    b.Property<int>("Frequencia")
-                        .HasColumnType("int");
+                    b.Property<double>("Frequencia")
+                        .HasColumnType("double");
 
                     b.Property<decimal>("Media")
                         .HasColumnType("decimal(65,30)");
@@ -143,8 +147,9 @@ namespace Infra.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int>("Resultado")
-                        .HasColumnType("int");
+                    b.Property<string>("Resultado")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<Guid>("SemestreId")
                         .HasColumnType("char(36)");
@@ -264,6 +269,34 @@ namespace Infra.Migrations
                     b.HasIndex("CursoId");
 
                     b.ToTable("Semestres");
+                });
+
+            modelBuilder.Entity("Infra.Entities.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("AlunoId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ResetPasswordToken")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("ResetPasswordTokenExpiry")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("ApiTcc.Infra.DB.Entities.Avaliacao", b =>

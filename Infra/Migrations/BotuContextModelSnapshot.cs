@@ -274,20 +274,24 @@ namespace Infra.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<Guid>("AlunoIdId")
+                    b.Property<Guid>("AlunoId")
                         .HasColumnType("char(36)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("ResetPasswordToken")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("ResetPasswordTokenExpiry")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AlunoIdId");
 
                     b.ToTable("Users");
                 });
@@ -385,17 +389,6 @@ namespace Infra.Migrations
                         .HasForeignKey("CursoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Infra.Entities.User", b =>
-                {
-                    b.HasOne("ApiTcc.Infra.DB.Entities.Aluno", "AlunoId")
-                        .WithMany()
-                        .HasForeignKey("AlunoIdId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AlunoId");
                 });
 
             modelBuilder.Entity("ApiTcc.Infra.DB.Entities.Aluno", b =>

@@ -1,17 +1,9 @@
-﻿using ApiTcc.Infra.DB;
-using ApiTcc.Infra.DB.Entities;
-using ApiTcc.Negocio.Enums;
+﻿using ApiTcc.Infra.DB.Entities;
 using Application.Interfaces;
 using Infra;
 using Infra.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Login.Command
 {
@@ -19,6 +11,9 @@ namespace Application.Login.Command
     {
         public string Login { get; set; }
         public string Senha { get; set; }
+        public string Email { get; set; }
+        public string Nome { get; set; }
+        public DateTime DataNascimento { get; set; }
     }
 
     public class AdicionarLoginCommandHandler : IAdicionarLoginCommandHandler
@@ -42,15 +37,45 @@ namespace Application.Login.Command
                 throw new System.Exception("Usuário já existe.");
             }
 
+            var aluno = CriarAluno(command);
+            aluno.Faculdade.Add(CriarFaculdadeAluno(aluno));
+
             var newUser = new User
             {
                 Username = command.Login,
-                // Use o PasswordHasher para criar o hash da senha
-                PasswordHash = _passwordHasher.HashPassword(null, command.Senha)
+                PasswordHash = _passwordHasher.HashPassword(null, command.Senha),
+                AlunoId = aluno.Id
             };
 
+            await _botuContext.Alunos.AddAsync(aluno);
             await _botuContext.Users.AddAsync(newUser);
             _botuContext.SaveChanges();
         }
+
+        private Aluno CriarAluno(AdicionarLoginCommand command)
+        {
+            var id = Guid.NewGuid() ;
+            return new Aluno
+            {
+                Id = id,
+                Email = command.Email,
+                Nome = command.Nome,
+                DataNascimento = command.DataNascimento,
+                Integracoes = new List<Integracao>(),
+                Faculdade = new List<FaculdadeAluno>(),
+            };
+        }
+
+        private FaculdadeAluno CriarFaculdadeAluno(Aluno aluno)
+        {
+            var novaFaculdadeAluno = new FaculdadeAluno
+            {
+                Aluno = aluno,
+                Faculdade = _botuContext.Faculdades.First(),
+            };
+
+            return novaFaculdadeAluno;
+        }
+
     }
 }
