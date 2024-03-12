@@ -21,5 +21,6 @@ namespace Infra
         DbSet<User> Users { get; set; }
         DbSet<FaculdadeAluno> FaculdadeAluno { get; set; }
         int SaveChanges();
+        Task<int> SaveChangesAsync();
     }
 }

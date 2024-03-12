@@ -20,7 +20,8 @@ namespace ApiTcc.Infra.DB
         public DbSet<CursoAluno> CursoAluno { get; set; }
         public DbSet<User> Users { get; set; }
 
-        public int SaveChanges() => base.SaveChanges();
+        public override int SaveChanges() => base.SaveChanges();
+        public  Task<int> SaveChangesAsync() => base.SaveChangesAsync();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

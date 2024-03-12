@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infra.Migrations
 {
     [DbContext(typeof(BotuContext))]
-    [Migration("20240307015357_AdicionarUser")]
-    partial class AdicionarUser
+    [Migration("20240312005911_AjusteResetpass3")]
+    partial class AjusteResetpass3
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -28,8 +28,12 @@ namespace Infra.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<DateTime>("DataNascimento")
-                        .HasColumnType("datetime(6)");
+                    b.Property<DateOnly>("DataNascimento")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Nome")
                         .IsRequired()
@@ -129,8 +133,8 @@ namespace Infra.Migrations
                     b.Property<int>("Faltas")
                         .HasColumnType("int");
 
-                    b.Property<int>("Frequencia")
-                        .HasColumnType("int");
+                    b.Property<double>("Frequencia")
+                        .HasColumnType("double");
 
                     b.Property<decimal>("Media")
                         .HasColumnType("decimal(65,30)");
@@ -143,8 +147,9 @@ namespace Infra.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int>("Resultado")
-                        .HasColumnType("int");
+                    b.Property<string>("Resultado")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<Guid>("SemestreId")
                         .HasColumnType("char(36)");
@@ -272,9 +277,18 @@ namespace Infra.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid>("AlunoId")
+                        .HasColumnType("char(36)");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<string>("ResetPasswordToken")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("ResetPasswordTokenExpiry")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Username")
                         .IsRequired()

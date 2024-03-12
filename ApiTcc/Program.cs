@@ -15,6 +15,9 @@ using Application.Login.Command;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Infra.Email;
+using Infra.Services;
+using Infra.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +49,10 @@ builder.Services.AddScoped<IBuscarSemestresQueryHandler, BuscarSemestresQueryHan
 builder.Services.AddScoped<IBuscarCursosQueryHandler, BuscarCursosQueryHandler>();
 builder.Services.AddScoped<IAdicionarLoginCommandHandler, AdicionarLoginCommandHandler>();
 builder.Services.AddScoped<IGetUserCommandHandler, GetUserCommandHandler>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IRecuperarSenhaCommandHandler, RecuperarSenhaCommandHandler>();
+builder.Services.AddScoped<IRedefinirSenhaCommandHandler, RedefinirSenhaCommandHandler>();
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
 builder.Services.AddHangfire(configuration => configuration
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
@@ -86,13 +93,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 
-builder.Services.AddMvc(config =>
-{
-    var policy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
-    config.Filters.Add(new AuthorizeFilter(policy));
-}).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+//todo voltar isso
+//builder.Services.AddMvc(config =>
+//{
+//    var policy = new AuthorizationPolicyBuilder()
+//                    .RequireAuthenticatedUser()
+//                    .Build();
+//    config.Filters.Add(new AuthorizeFilter(policy));
+//}).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
 //builder.Services.AddControllersWithViews(options =>
 //{

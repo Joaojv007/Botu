@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infra.Migrations
 {
     [DbContext(typeof(BotuContext))]
-    [Migration("20240228004045_AdicaoSiga")]
-    partial class AdicaoSiga
+    [Migration("20240311232308_Reset")]
+    partial class Reset
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -30,6 +30,10 @@ namespace Infra.Migrations
 
                     b.Property<DateTime>("DataNascimento")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Nome")
                         .IsRequired()
@@ -53,7 +57,7 @@ namespace Infra.Migrations
                     b.Property<DateTime>("DataEntrega")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid?>("DisciplinaId")
+                    b.Property<Guid>("DisciplinaId")
                         .HasColumnType("char(36)");
 
                     b.Property<string>("Nome")
@@ -129,8 +133,8 @@ namespace Infra.Migrations
                     b.Property<int>("Faltas")
                         .HasColumnType("int");
 
-                    b.Property<int>("Frequencia")
-                        .HasColumnType("int");
+                    b.Property<double>("Frequencia")
+                        .HasColumnType("double");
 
                     b.Property<decimal>("Media")
                         .HasColumnType("decimal(65,30)");
@@ -143,10 +147,11 @@ namespace Infra.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int>("Resultado")
-                        .HasColumnType("int");
+                    b.Property<string>("Resultado")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
-                    b.Property<Guid?>("SemestreId")
+                    b.Property<Guid>("SemestreId")
                         .HasColumnType("char(36)");
 
                     b.HasKey("Id");
@@ -246,7 +251,7 @@ namespace Infra.Migrations
                     b.Property<Guid>("AlunoId")
                         .HasColumnType("char(36)");
 
-                    b.Property<Guid?>("CursoId")
+                    b.Property<Guid>("CursoId")
                         .HasColumnType("char(36)");
 
                     b.Property<DateTime?>("DataFinal")
@@ -266,11 +271,44 @@ namespace Infra.Migrations
                     b.ToTable("Semestres");
                 });
 
+            modelBuilder.Entity("Infra.Entities.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("AlunoId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ResetPasswordToken")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("ResetPasswordTokenExpiry")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
+                });
+
             modelBuilder.Entity("ApiTcc.Infra.DB.Entities.Avaliacao", b =>
                 {
-                    b.HasOne("ApiTcc.Infra.DB.Entities.Disciplina", null)
+                    b.HasOne("ApiTcc.Infra.DB.Entities.Disciplina", "Disciplina")
                         .WithMany("Avaliacoes")
-                        .HasForeignKey("DisciplinaId");
+                        .HasForeignKey("DisciplinaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Disciplina");
                 });
 
             modelBuilder.Entity("ApiTcc.Infra.DB.Entities.Curso", b =>
@@ -301,9 +339,13 @@ namespace Infra.Migrations
 
             modelBuilder.Entity("ApiTcc.Infra.DB.Entities.Disciplina", b =>
                 {
-                    b.HasOne("ApiTcc.Infra.DB.Entities.Semestre", null)
+                    b.HasOne("ApiTcc.Infra.DB.Entities.Semestre", "Semestre")
                         .WithMany("Disciplinas")
-                        .HasForeignKey("SemestreId");
+                        .HasForeignKey("SemestreId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Semestre");
                 });
 
             modelBuilder.Entity("ApiTcc.Infra.DB.Entities.FaculdadeAluno", b =>
@@ -348,7 +390,9 @@ namespace Infra.Migrations
                 {
                     b.HasOne("ApiTcc.Infra.DB.Entities.Curso", null)
                         .WithMany("Semestres")
-                        .HasForeignKey("CursoId");
+                        .HasForeignKey("CursoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ApiTcc.Infra.DB.Entities.Aluno", b =>
