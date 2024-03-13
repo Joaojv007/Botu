@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Domain.Dto_s;
 
 namespace Application.Integracoes.Queries
 {
@@ -20,14 +21,34 @@ namespace Application.Integracoes.Queries
             _botuContext = botuContext;
         }
 
-        public async Task<List<Disciplina>> Handle(Guid AlunoId, Guid Semestre)
+        public List<DisciplinaDto> Handle(Guid semestre)
         {
-            var semestre = _botuContext.Semestres
-                .Include(x => x.Disciplinas)
-                .ThenInclude(x => x.Avaliacoes)
-                .FirstOrDefault(x => x.Id == Semestre);
+            var disciplinas = _botuContext.Disciplinas
+                .Where(d => d.SemestreId == semestre)
+                .Include(d => d.Avaliacoes)
+                .Select(d => new DisciplinaDto
+                {
+                    Id = d.Id,
+                    Nome = d.Nome,
+                    Professor = d.Professor,
+                    Frequencia = d.Frequencia,
+                    Faltas = d.Faltas,
+                    Aulas = d.Aulas,
+                    Media = d.Media,
+                    Resultado = d.Resultado,
+                    SemestreId = d.SemestreId,
+                    Avaliacoes = d.Avaliacoes.Select(a => new AvaliacaoDto
+                    {
+                        Id = a.Id,
+                        Nome = a.Nome,
+                        DataEntrega = a.DataEntrega,
+                        Conteudo = a.Conteudo,
+                        Nota = a.Nota,
+                        TipoTarefa = a.TipoTarefa
+                    }).ToList()
+                }).ToList();
 
-            return semestre.Disciplinas;
+            return disciplinas;
         }
     }
 }

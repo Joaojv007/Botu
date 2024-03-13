@@ -28,8 +28,9 @@ namespace Application.Integracoes.Queries
                 .Include(x => x.Aluno)
                 .First(x => x.Aluno.Id == alunoId);
 
+            var retorno = faculdadeAluno.Faculdade.Cursos.ToList();
 
-            return faculdadeAluno.Faculdade.Cursos;
+            return retorno;
         }
     }
 }
