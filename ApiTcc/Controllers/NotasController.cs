@@ -18,13 +18,12 @@ namespace ApiTcc.Controllers
         
         [HttpGet("GetDisciplinas")]
         public IActionResult GetDisciplinas(
-            [FromQuery] Guid AlunoId,  
-            [FromQuery] Guid Semestre,  
+            [FromQuery] Guid semestreId,  
             [FromServices] IBuscarDisciplinasQueryHandler queryHandler)
         {
             try
             {
-                var disciplinas = queryHandler.Handle(AlunoId, Semestre);
+                var disciplinas = queryHandler.Handle(semestreId);
                 return StatusCode(200, disciplinas); ;
             }
             catch (Exception e)

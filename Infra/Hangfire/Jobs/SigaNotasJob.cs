@@ -79,11 +79,11 @@ namespace Infra.Hangfire.Jobs
                 var informacoesNotaParcialSemestres = CapturarInformacoesSemestresDropdown();
                 var listSemestres = TransferirInformacoesParaSemestres(informacoesNotaParcialSemestres);
 
-                if (integracao.CapturouSemestresPassados)
-                    listSemestres.RemoveRange(1, listSemestres.Count - 1);
+                //if (integracao.CapturouSemestresPassados)
+                //    listSemestres.RemoveRange(1, listSemestres.Count - 1);
 
                 //teste
-                //listSemestres.RemoveRange(2, listSemestres.Count - 2);
+                listSemestres.RemoveRange(2, listSemestres.Count - 2);
 
                 foreach (var semestre in listSemestres)
                 {
@@ -297,7 +297,7 @@ namespace Infra.Hangfire.Jobs
         private List<Dictionary<string, string>> CapturarInformacoesNotaParcial(Semestre semestre)
         {
             IrParaSemestre(semestre);
-
+            //var informacoesNotaParcial = CapturarDisciplinasResultado();
             SelecionarNotaParcial();
 
             var tabela = _driver.FindElement(By.Id("formPrincipal:notasFaltas_data"));
@@ -328,6 +328,11 @@ namespace Infra.Hangfire.Jobs
             }
 
             return informacoes;
+        }
+
+        private object CapturarDisciplinasResultado()
+        {
+            throw new NotImplementedException();
         }
 
         private void IrParaSemestre(Semestre semestre)
@@ -389,6 +394,7 @@ namespace Infra.Hangfire.Jobs
 
         private void LogarSiga(string login, string senha)
         {
+            Thread.Sleep(500);
             var campoLogin = _driver.FindElement(By.Id("j_username"));
             campoLogin.SendKeys(login);
 

@@ -1,15 +1,9 @@
-﻿using ApiTcc.Infra.DB.Entities;
-using ApiTcc.Responses;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Domain.Dto_s;
 
 namespace Application.Interfaces
 {
     public interface IBuscarDisciplinasQueryHandler
     {
-        Task<List<Disciplina>> Handle(Guid AlunoId, Guid Semestre);
+        List<DisciplinaDto> Handle(Guid semestreId);
     }
 }
