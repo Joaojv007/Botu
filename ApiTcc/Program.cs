@@ -102,10 +102,10 @@ builder.Services.AddMvc(config =>
     config.Filters.Add(new AuthorizeFilter(policy));
 }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-builder.Services.AddControllersWithViews(options =>
-{
-    options.Filters.Add<GlobalSampleActionFilter>();
-});
+//builder.Services.AddControllersWithViews(options =>
+//{
+//    options.Filters.Add<GlobalSampleActionFilter>();
+//});
 
 
 var app = builder.Build();
