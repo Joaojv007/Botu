@@ -87,7 +87,8 @@ namespace Infra.Hangfire.Jobs
 
                 foreach (var semestre in listSemestres)
                 {
-                    var informacoesNotaParcial = CapturarInformacoesNotaParcial(semestre);
+                    var firstSemestre = listSemestres.First().Nome == semestre.Nome;
+                    var informacoesNotaParcial = CapturarInformacoesNotaParcial(semestre, firstSemestre);
                     semestre.Disciplinas.AddRange(TransferirInformacoesParaDisciplinas(informacoesNotaParcial));
 
                     var notasParciaisElements = _driver.FindElements(By.CssSelector("a[title*='Clique aqui para visualizar as avaliações parciais que compõem esta nota.']"));
@@ -252,7 +253,7 @@ namespace Infra.Hangfire.Jobs
                 disciplina.Faltas = int.TryParse(arrayFaltaAula[0], out int faltasOut) ? faltasOut : 0;
                 disciplina.Aulas = int.TryParse(arrayFaltaAula[1], out int aulasOut) ? aulasOut : 0;
                 disciplina.Professor = "Não atribuido";
-                disciplina.Resultado = "Não atribuído";
+                disciplina.Resultado = info["Resultado"];
                 disciplina.Frequencia = CalcularFrequencia(disciplina.Faltas, disciplina.Aulas);
 
                 listDisciplinas.Add(disciplina);
@@ -294,10 +295,12 @@ namespace Infra.Hangfire.Jobs
             return listSemestre;
         }
 
-        private List<Dictionary<string, string>> CapturarInformacoesNotaParcial(Semestre semestre)
+        private List<Dictionary<string, string>> CapturarInformacoesNotaParcial(Semestre semestre, bool firstSemestre)
         {
             IrParaSemestre(semestre);
-            //var informacoesNotaParcial = CapturarDisciplinasResultado();
+            var informacoesResultado = new List<Dictionary<string, string>>(); ;
+            if (!firstSemestre)
+                informacoesResultado = CapturarDisciplinasResultado();
             SelecionarNotaParcial();
 
             var tabela = _driver.FindElement(By.Id("formPrincipal:notasFaltas_data"));
@@ -313,15 +316,18 @@ namespace Infra.Hangfire.Jobs
                 var disciplina = colunas[0].Text;
                 var nota = colunas[1].Text;
                 var faltas = colunas[2].Text;
+                var resultado = informacoesResultado.Count() == 0 ? "Cursando" : informacoesResultado[i]["Resultado"];
 
                 var notaElement = colunas[1]; // Tenta encontrar um link dentro da coluna
                 var innerHTML = notaElement.GetAttribute("innerHTML"); // Tenta encontrar um link dentro da coluna
+
 
                 var infoDisciplina = new Dictionary<string, string>
                 {
                     { "Disciplina", disciplina },
                     { "Nota", nota },
                     { "Faltas", faltas },
+                    { "Resultado", resultado },
                     { "IsLabel", innerHTML.Contains("</label>").ToString() } // Adiciona o tipo de nota (Link ou Label) ao dicionário
                 };
                 informacoes.Add(infoDisciplina);
@@ -330,10 +336,33 @@ namespace Infra.Hangfire.Jobs
             return informacoes;
         }
 
-        private object CapturarDisciplinasResultado()
+        private List<Dictionary<string, string>> CapturarDisciplinasResultado()
         {
-            throw new NotImplementedException();
+            var tabela = _driver.FindElement(By.Id("formPrincipal:notasFaltas_data"));
+            var linhas = tabela.FindElements(By.TagName("tr"));
+
+            var informacoesDisciplinaResultado = new List<Dictionary<string, string>>();
+
+            foreach (var linha in linhas)
+            {
+                var colunas = linha.FindElements(By.TagName("td"));
+
+                // Ajuste os índices conforme necessário
+                var disciplina = colunas[0].Text;
+                var resultado = colunas[3].Text;
+
+                var info = new Dictionary<string, string>
+                {
+                    { "Disciplina", disciplina },
+                    { "Resultado", resultado }
+                };
+
+                informacoesDisciplinaResultado.Add(info);
+            }
+
+            return informacoesDisciplinaResultado;
         }
+
 
         private void IrParaSemestre(Semestre semestre)
         {
@@ -343,6 +372,7 @@ namespace Infra.Hangfire.Jobs
             Thread.Sleep(500);
             var opcaoSemestre = _driver.FindElement(By.XPath($"//span[text()='{semestre.Nome}']"));
             opcaoSemestre.Click();
+            Thread.Sleep(250);
         }
 
         public List<Dictionary<string, string>> CapturarInformacoesAvaliacoes()
