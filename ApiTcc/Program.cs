@@ -94,18 +94,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 
 //todo voltar isso
-//builder.Services.AddMvc(config =>
-//{
-//    var policy = new AuthorizationPolicyBuilder()
-//                    .RequireAuthenticatedUser()
-//                    .Build();
-//    config.Filters.Add(new AuthorizeFilter(policy));
-//}).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+builder.Services.AddMvc(config =>
+{
+    var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+    config.Filters.Add(new AuthorizeFilter(policy));
+}).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-//builder.Services.AddControllersWithViews(options =>
-//{
-//    options.Filters.Add<GlobalSampleActionFilter>();
-//});
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<GlobalSampleActionFilter>();
+});
 
 
 var app = builder.Build();
