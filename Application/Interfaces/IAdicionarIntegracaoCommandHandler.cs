@@ -11,6 +11,6 @@ namespace Application.Interfaces
 {
     public interface IGetUserCommandHandler
     {
-        Task<string> Handle(GetUserCommand command);
+        Task<LoginResponse> Handle(GetUserCommand command);
     }
 }

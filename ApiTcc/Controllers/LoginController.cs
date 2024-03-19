@@ -44,8 +44,8 @@ namespace ApiTcc.Controllers
         {
             try
             {
-                var jwt = await queryHandler.Handle(getUserCommand);
-                return Ok(jwt);
+                var loginResponse = await queryHandler.Handle(getUserCommand);
+                return Ok(loginResponse);
             }
             catch (Exception e)
             {
