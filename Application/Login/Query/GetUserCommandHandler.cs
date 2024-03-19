@@ -15,6 +15,12 @@ namespace Application.Login.Command
         public string Senha { get; set; }
     }
 
+    public class LoginResponse
+    {
+        public string Token { get; set; }
+        public Guid AlunoId { get; set; }
+    }
+
     public class GetUserCommandHandler : IGetUserCommandHandler
     {
         private readonly IBotuContext _botuContext;
@@ -30,7 +36,7 @@ namespace Application.Login.Command
             _jwtSettings = jwtSettings.Value;
         }
 
-        public async Task<string> Handle(GetUserCommand command)
+        public async Task<LoginResponse> Handle(GetUserCommand command)
         {
             var user = await _botuContext.Users.FirstOrDefaultAsync(u => u.Username == command.Login);
 
@@ -39,7 +45,13 @@ namespace Application.Login.Command
                 throw new UnauthorizedAccessException("Credenciais inválidas.");
             }
 
-            return _authenticationService.GenerateJwtToken(user);
+            var response = new LoginResponse()
+            {
+                Token = _authenticationService.GenerateJwtToken(user),
+                AlunoId = user.AlunoId,
+            };
+
+            return response;
         }
     }
 }
