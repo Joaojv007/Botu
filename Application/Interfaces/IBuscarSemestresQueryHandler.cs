@@ -4,6 +4,6 @@ namespace Application.Interfaces
 {
     public interface IBuscarDisciplinasQueryHandler
     {
-        List<DisciplinaDto> Handle(Guid semestreId);
+        Result Handle(Guid semestreId);
     }
 }
