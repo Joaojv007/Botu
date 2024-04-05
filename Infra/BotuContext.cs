@@ -25,18 +25,23 @@ namespace ApiTcc.Infra.DB
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Semestre>()
-                .HasMany(s => s.Disciplinas)
-                .WithOne(d => d.Semestre)
-                .HasForeignKey(d => d.SemestreId) // Chave estrangeira para Semestre
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Semestre>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Nome).HasMaxLength(200);
+                entity.HasMany(s => s.Disciplinas)
+                    .WithOne(d => d.Semestre)
+                    .HasForeignKey(d => d.SemestreId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
 
-            modelBuilder.Entity<Disciplina>()
-                .HasMany(d => d.Avaliacoes)
+            modelBuilder.Entity<Disciplina>(entity =>
+            {
+                entity.HasMany(d => d.Avaliacoes)
                 .WithOne(a => a.Disciplina)
-                .HasForeignKey(a => a.DisciplinaId) // Chave estrangeira para Disciplina
+                .HasForeignKey(a => a.DisciplinaId)
                 .OnDelete(DeleteBehavior.Cascade);
+            });
         }
-
     }
 }
