@@ -7,11 +7,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="DashBoard\" />
+    <Compile Remove="DashBoard\**" />
+    <EmbeddedResource Remove="DashBoard\**" />
+    <None Remove="DashBoard\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Business\Infra.csproj" />
+    <ProjectReference Include="..\Infra\Infra.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.4.0" />
+    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.4.0" />
   </ItemGroup>
 
 </Project>

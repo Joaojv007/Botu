@@ -9,8 +9,8 @@ using System.Threading.Tasks;
 
 namespace Application.Interfaces
 {
-    public interface IGetUserCommandHandler
+    public interface IAdicionarLoginCommandHandler
     {
-        Task<LoginResponse> Handle(GetUserCommand command);
+        Task Handle(AdicionarLoginCommand command);
     }
 }
