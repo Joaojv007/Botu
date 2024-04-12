@@ -1,6 +1,5 @@
-﻿using ApiTcc.Infra.DB.Entities;
+﻿using Domain.Entities;
 using Infra;
-using Infra.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApiTcc.Infra.DB

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using ApiTcc.Infra.DB.Entities;
+using Domain.Entities;
 using Hangfire;
 using Infra.Email;
 using Microsoft.EntityFrameworkCore;

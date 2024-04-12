@@ -2,10 +2,10 @@
 using Infra;
 using Infra.Interfaces;
 using Infra.Criptografia;
-using Infra.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Domain.Entities;
 
 namespace Application.Login.Command
 {

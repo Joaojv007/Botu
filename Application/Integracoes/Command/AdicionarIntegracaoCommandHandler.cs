@@ -1,7 +1,6 @@
-﻿using ApiTcc.Infra.DB;
-using ApiTcc.Infra.DB.Entities;
-using ApiTcc.Negocio.Enums;
+﻿using ApiTcc.Negocio.Enums;
 using Application.Interfaces;
+using Domain.Entities;
 using Infra;
 using Microsoft.EntityFrameworkCore;
 
