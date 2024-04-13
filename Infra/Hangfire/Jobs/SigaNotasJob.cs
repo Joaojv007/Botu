@@ -372,7 +372,7 @@ namespace Infra.Hangfire.Jobs
             Thread.Sleep(500);
             var opcaoSemestre = _driver.FindElement(By.XPath($"//span[text()='{semestre.Nome}']"));
             opcaoSemestre.Click();
-            Thread.Sleep(250);
+            Thread.Sleep(500);
         }
 
         public List<Dictionary<string, string>> CapturarInformacoesAvaliacoes()
