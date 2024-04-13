@@ -1,4 +1,4 @@
-﻿using ApiTcc.Infra.DB.Entities;
+﻿
 using ApiTcc.Responses;
 using Application.Interfaces;
 using Infra;

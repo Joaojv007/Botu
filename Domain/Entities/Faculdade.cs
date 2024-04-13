@@ -1,4 +1,4 @@
-﻿namespace ApiTcc.Infra.DB.Entities
+﻿namespace Domain.Entities
 {
     public class Faculdade : EntityBase
     {

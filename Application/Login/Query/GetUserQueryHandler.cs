@@ -2,10 +2,10 @@
 using Infra;
 using Infra.Interfaces;
 using Infra.Criptografia;
-using Infra.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Domain.Entities;
 
 namespace Application.Login.Command
 {
@@ -21,14 +21,14 @@ namespace Application.Login.Command
         public Guid AlunoId { get; set; }
     }
 
-    public class GetUserCommandHandler : IGetUserCommandHandler
+    public class GetUserQueryHandler : IGetUserQueryHandler
     {
         private readonly IBotuContext _botuContext;
         private readonly PasswordHasher<User> _passwordHasher;
         private readonly JwtSettings _jwtSettings;
         private readonly IAuthenticationService _authenticationService;
 
-        public GetUserCommandHandler(IBotuContext botuContext, IOptions<JwtSettings> jwtSettings, IAuthenticationService authenticationService)
+        public GetUserQueryHandler(IBotuContext botuContext, IOptions<JwtSettings> jwtSettings, IAuthenticationService authenticationService)
         {
             _authenticationService = authenticationService;
             _botuContext = botuContext;

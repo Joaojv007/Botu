@@ -40,7 +40,7 @@ namespace ApiTcc.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> Login(
             [FromBody] GetUserCommand getUserCommand,  
-            [FromServices] IGetUserCommandHandler queryHandler)
+            [FromServices] IGetUserQueryHandler queryHandler)
         {
             try
             {

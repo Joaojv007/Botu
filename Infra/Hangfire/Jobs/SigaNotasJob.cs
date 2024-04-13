@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using ApiTcc.Infra.DB.Entities;
+using Domain.Entities;
 using Hangfire;
 using Infra.Email;
 using Microsoft.EntityFrameworkCore;
@@ -372,7 +372,7 @@ namespace Infra.Hangfire.Jobs
             Thread.Sleep(500);
             var opcaoSemestre = _driver.FindElement(By.XPath($"//span[text()='{semestre.Nome}']"));
             opcaoSemestre.Click();
-            Thread.Sleep(250);
+            Thread.Sleep(500);
         }
 
         public List<Dictionary<string, string>> CapturarInformacoesAvaliacoes()

@@ -1,6 +1,6 @@
 ﻿using ApiTcc.Negocio.Enums;
 
-namespace ApiTcc.Infra.DB.Entities
+namespace Domain.Entities
 {
     public class Integracao : EntityBase
     {

@@ -1,12 +1,11 @@
-﻿using Infra.Criptografia;
-using Infra.Entities;
+﻿using Domain.Entities;
+using Infra.Criptografia;
+
 using Infra.Interfaces;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
 

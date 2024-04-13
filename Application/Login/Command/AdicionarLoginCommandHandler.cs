@@ -1,7 +1,7 @@
-﻿using ApiTcc.Infra.DB.Entities;
+﻿
 using Application.Interfaces;
+using Domain.Entities;
 using Infra;
-using Infra.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
