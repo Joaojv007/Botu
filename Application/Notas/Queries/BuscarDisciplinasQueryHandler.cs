@@ -21,7 +21,7 @@ namespace Application.Integracoes.Queries
             _botuContext = botuContext;
         }
 
-        public List<DisciplinaDto> Handle(Guid semestre)
+        public Result Handle(Guid semestre)
         {
             var disciplinas = _botuContext.Disciplinas
                 .Where(d => d.SemestreId == semestre)
@@ -48,7 +48,9 @@ namespace Application.Integracoes.Queries
                     }).ToList()
                 }).ToList();
 
-            return disciplinas;
+            var retorno = new Result();
+            retorno.Disciplinas = disciplinas;
+            return retorno;
         }
     }
 }

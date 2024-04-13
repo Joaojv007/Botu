@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace Domain.Dto_s
 {
+    public class Result 
+    { 
+        public List<DisciplinaDto> Disciplinas { get; set; }
+    }
+
     public class DisciplinaDto
     {
         public Guid Id { get; set; }
