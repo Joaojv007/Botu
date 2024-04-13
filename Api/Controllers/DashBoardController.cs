@@ -1,8 +1,8 @@
-using ApiTcc.Infra.DB.Entities;
+
 using Application.Interfaces;
 using Infra;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
 
 namespace ApiTcc.Controllers
 {
@@ -11,7 +11,8 @@ namespace ApiTcc.Controllers
     public class DashBoardController : ControllerBase
     {
         public DashBoardController(){}
-        
+
+        [AllowAnonymous]
         [HttpGet("afazeres-pendentes",Name = "GetAfazeresPendentes")]
         [ActionName("GetAfazeresPendentes")]
         public int GetAfazeresPendentes()

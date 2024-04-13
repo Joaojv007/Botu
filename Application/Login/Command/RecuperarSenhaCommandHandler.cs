@@ -1,10 +1,10 @@
 ﻿using ApiTcc.Infra.DB;
-using ApiTcc.Infra.DB.Entities;
+
 using ApiTcc.Negocio.Enums;
 using Application.Interfaces;
 using Hangfire;
 using Infra;
-using Infra.Entities;
+
 using Infra.Hangfire.Jobs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

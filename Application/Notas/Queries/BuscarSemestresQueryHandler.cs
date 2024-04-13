@@ -1,12 +1,6 @@
-﻿using ApiTcc.Infra.DB.Entities;
-using ApiTcc.Responses;
-using Application.Interfaces;
+﻿using Application.Interfaces;
+using Domain.Entities;
 using Infra;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Integracoes.Queries
