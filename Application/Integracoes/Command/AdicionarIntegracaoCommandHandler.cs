@@ -32,9 +32,9 @@ namespace Application.Integracoes.Command
 
             var aluno = _botuContext.Alunos
                 .Include(x => x.Integracoes)
-                .First(x => x.Id == AdicionarIntegracaoCommand.AlunoId);
+                .First(x => x.Id == _command.AlunoId);
             
-            var faculdade = _botuContext.Faculdades.First(x => x.Id == AdicionarIntegracaoCommand.FaculdadeId);
+            var faculdade = _botuContext.Faculdades.First(x => x.Id == _command.FaculdadeId);
 
             var integracao = aluno.Integracoes.FirstOrDefault(x => x.TipoIntegracao == _command.TipoIntegracao);
 

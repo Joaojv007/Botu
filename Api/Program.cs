@@ -45,7 +45,7 @@ builder.Services.AddScoped<IBuscarDisciplinasQueryHandler, BuscarDisciplinasQuer
 builder.Services.AddScoped<IBuscarSemestresQueryHandler, BuscarSemestresQueryHandler>();
 builder.Services.AddScoped<IBuscarCursosQueryHandler, BuscarCursosQueryHandler>();
 builder.Services.AddScoped<IAdicionarLoginCommandHandler, AdicionarLoginCommandHandler>();
-builder.Services.AddScoped<IGetUserCommandHandler, GetUserCommandHandler>();
+builder.Services.AddScoped<IGetUserQueryHandler, GetUserQueryHandler>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IRecuperarSenhaCommandHandler, RecuperarSenhaCommandHandler>();
 builder.Services.AddScoped<IRedefinirSenhaCommandHandler, RedefinirSenhaCommandHandler>();
